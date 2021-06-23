@@ -1,3 +1,5 @@
 # FDK OpenAPI Specifications
 
-You can find two OpenAPI Specifications which can be imported on Swagger UI and used.
+This is hosted on [Fynd Platform API Documentation](https://documentation.fynd.com/en/api-doc)
+
+You can also use two OpenAPI Specifications from this folder and check them out on Swagger UI.
