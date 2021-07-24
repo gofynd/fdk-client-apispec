@@ -4,7 +4,7 @@ You can find two collections which can be imported in Postman and used.
 
 You will need to use Import from Link option and use the below links
 
-1. ```md
+```md
 https://raw.githubusercontent.com/gofynd/fdk-client-apispec/main/postman/platform.json
 ```
 
