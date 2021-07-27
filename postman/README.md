@@ -4,7 +4,7 @@ You can find two collections one for **Application Side APIs** and other for **P
 
 You will need to use **Import from Link** option and use the below links
 
-1. Application Front APIs Collection Link
+1. Platform Front APIs Collection Link
 ```md
 https://raw.githubusercontent.com/gofynd/fdk-client-apispec/main/postman/platform.json
 ```
