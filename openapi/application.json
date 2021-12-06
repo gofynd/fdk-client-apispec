@@ -16993,6 +16993,57 @@
         }
       }
     },
+    "/service/application/assets/v1.0/company/{company_id}/sign-urls/": {
+      "post": {
+        "summary": "signUrls | Explain here",
+        "description": "Describe here",
+        "tags": [
+          "FileStorage"
+        ],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "description": "company_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignUrlResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailedResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/application/configuration/v1.0/application": {
       "get": {
         "description": "Use this API to get the current application details which includes configurations that indicate the status of the website, domain, ID, tokens, images, etc.",
@@ -40964,19 +41015,39 @@
       "AggregatorConfigDetail": {
         "type": "object",
         "properties": {
+          "config_type": {
+            "type": "string",
+            "description": "Fynd or self payment gateway"
+          },
           "merchant_key": {
             "type": "string",
             "nullable": true,
             "description": "Unique merchant key"
           },
-          "user_id": {
+          "verify_api": {
             "type": "string",
+            "format": "url",
             "nullable": true,
-            "description": "Registered User id"
+            "description": "Payment gateway verify payment api endpoint"
+          },
+          "api": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "Payment gateway api endpoint"
           },
           "key": {
             "type": "string",
             "description": "Payment gateway api key"
+          },
+          "pin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Masked pin"
+          },
+          "secret": {
+            "type": "string",
+            "description": "Masked payment gateway api secret"
           },
           "sdk": {
             "type": "boolean",
@@ -40988,30 +41059,10 @@
             "nullable": true,
             "description": "Unique merchant id"
           },
-          "pin": {
+          "user_id": {
             "type": "string",
             "nullable": true,
-            "description": "Masked pin"
-          },
-          "api": {
-            "type": "string",
-            "format": "url",
-            "nullable": true,
-            "description": "Payment gateway api endpoint"
-          },
-          "verify_api": {
-            "type": "string",
-            "format": "url",
-            "nullable": true,
-            "description": "Payment gateway verify payment api endpoint"
-          },
-          "secret": {
-            "type": "string",
-            "description": "Masked payment gateway api secret"
-          },
-          "config_type": {
-            "type": "string",
-            "description": "Fynd or self payment gateway"
+            "description": "Registered User id"
           }
         },
         "required": [
@@ -41023,32 +41074,32 @@
       "AggregatorsConfigDetailResponse": {
         "type": "object",
         "properties": {
-          "mswipe": {
-            "$ref": "#/components/schemas/AggregatorConfigDetail"
-          },
-          "rupifi": {
-            "$ref": "#/components/schemas/AggregatorConfigDetail"
-          },
           "simpl": {
             "$ref": "#/components/schemas/AggregatorConfigDetail"
           },
-          "ccavenue": {
+          "stripe": {
             "$ref": "#/components/schemas/AggregatorConfigDetail"
           },
           "razorpay": {
+            "$ref": "#/components/schemas/AggregatorConfigDetail"
+          },
+          "juspay": {
+            "$ref": "#/components/schemas/AggregatorConfigDetail"
+          },
+          "ccavenue": {
             "$ref": "#/components/schemas/AggregatorConfigDetail"
           },
           "env": {
             "type": "string",
             "description": "Environment i.e Live or Test"
           },
-          "juspay": {
-            "$ref": "#/components/schemas/AggregatorConfigDetail"
-          },
-          "stripe": {
+          "rupifi": {
             "$ref": "#/components/schemas/AggregatorConfigDetail"
           },
           "payumoney": {
+            "$ref": "#/components/schemas/AggregatorConfigDetail"
+          },
+          "mswipe": {
             "$ref": "#/components/schemas/AggregatorConfigDetail"
           },
           "success": {
@@ -41096,23 +41147,23 @@
       "AttachCardRequest": {
         "type": "object",
         "properties": {
-          "name_on_card": {
-            "type": "string",
-            "default": ""
-          },
-          "nickname": {
-            "type": "string",
-            "default": ""
-          },
           "card_id": {
             "type": "string",
             "nullable": true,
             "description": "Card token of payment gateway."
           },
+          "nickname": {
+            "type": "string",
+            "default": ""
+          },
           "refresh": {
             "type": "boolean",
             "nullable": true,
             "description": "Refresh cache flag."
+          },
+          "name_on_card": {
+            "type": "string",
+            "default": ""
           }
         },
         "required": [
@@ -41122,13 +41173,13 @@
       "AttachCardsResponse": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "Human readable message."
-          },
           "data": {
             "type": "object",
             "description": "List of cards of customer."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human readable message."
           },
           "success": {
             "type": "boolean",
@@ -41143,19 +41194,19 @@
       "CardPaymentGateway": {
         "type": "object",
         "properties": {
-          "api": {
+          "customer_id": {
             "type": "string",
             "nullable": true,
-            "description": "Payment gateway CARD api endpoint"
+            "description": "Payment gateway customer id."
           },
           "aggregator": {
             "type": "string",
             "description": "Payment gateway name."
           },
-          "customer_id": {
+          "api": {
             "type": "string",
             "nullable": true,
-            "description": "Payment gateway customer id."
+            "description": "Payment gateway CARD api endpoint"
           }
         },
         "required": [
@@ -41165,10 +41216,6 @@
       "ActiveCardPaymentGatewayResponse": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "Human readable message."
-          },
           "cards": {
             "description": "Card's payment gateway with customer id.",
             "allOf": [
@@ -41176,6 +41223,10 @@
                 "$ref": "#/components/schemas/CardPaymentGateway"
               }
             ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Human readable message."
           },
           "success": {
             "type": "boolean",
@@ -41191,72 +41242,30 @@
       "Card": {
         "type": "object",
         "properties": {
-          "exp_year": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "description": "exp_year"
-          },
-          "card_name": {
+          "card_type": {
             "type": "string",
             "nullable": true,
-            "description": "card_name"
-          },
-          "card_fingerprint": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_fingerprint"
-          },
-          "card_issuer": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_issuer"
-          },
-          "nickname": {
-            "type": "string",
-            "nullable": true,
-            "description": "nickname"
+            "description": "card_type"
           },
           "card_isin": {
             "type": "string",
             "nullable": true,
             "description": "card_isin"
           },
-          "card_reference": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_reference"
-          },
           "card_token": {
             "type": "string",
             "nullable": true,
             "description": "card_token"
           },
-          "card_id": {
+          "card_name": {
             "type": "string",
             "nullable": true,
-            "description": "card_id"
+            "description": "card_name"
           },
-          "card_type": {
+          "nickname": {
             "type": "string",
             "nullable": true,
-            "description": "card_type"
-          },
-          "card_brand_image": {
-            "type": "string",
-            "format": "url",
-            "nullable": true,
-            "description": "card_brand_image"
-          },
-          "aggregator_name": {
-            "type": "string",
-            "description": "aggregator_name"
-          },
-          "exp_month": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "description": "exp_month"
+            "description": "nickname"
           },
           "card_brand": {
             "type": "string",
@@ -41268,10 +41277,52 @@
             "nullable": true,
             "description": "expired"
           },
+          "card_reference": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_reference"
+          },
+          "card_brand_image": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "card_brand_image"
+          },
+          "aggregator_name": {
+            "type": "string",
+            "description": "aggregator_name"
+          },
+          "exp_year": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "exp_year"
+          },
+          "card_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_id"
+          },
+          "card_fingerprint": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_fingerprint"
+          },
+          "exp_month": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "exp_month"
+          },
           "card_number": {
             "type": "string",
             "nullable": true,
             "description": "card_number"
+          },
+          "card_issuer": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_issuer"
           }
         },
         "required": [
@@ -41281,16 +41332,16 @@
       "ListCardsResponse": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "Human readable message."
-          },
           "data": {
             "type": "array",
             "description": "List of cards of customer.",
             "items": {
               "$ref": "#/components/schemas/Card"
             }
+          },
+          "message": {
+            "type": "string",
+            "description": "Human readable message."
           },
           "success": {
             "type": "boolean",
@@ -41335,10 +41386,18 @@
       "ValidateCustomerRequest": {
         "type": "object",
         "properties": {
+          "aggregator": {
+            "type": "string",
+            "description": "Payment gateway name in camel case i.e Simpl, Rupifi"
+          },
           "payload": {
             "type": "string",
             "nullable": true,
             "description": "Hashed payload string."
+          },
+          "merchant_params": {
+            "type": "object",
+            "description": "Extra meta fields."
           },
           "phone_number": {
             "type": "string",
@@ -41348,14 +41407,6 @@
             "type": "integer",
             "format": "int32",
             "description": "Payable amount in paise"
-          },
-          "aggregator": {
-            "type": "string",
-            "description": "Payment gateway name in camel case i.e Simpl, Rupifi"
-          },
-          "merchant_params": {
-            "type": "object",
-            "description": "Extra meta fields."
           }
         },
         "required": [
@@ -41369,13 +41420,13 @@
       "ValidateCustomerResponse": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "Error or success message."
-          },
           "data": {
             "type": "object",
             "description": "Payment gateway response data"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error or success message."
           },
           "success": {
             "type": "boolean",
@@ -41396,6 +41447,15 @@
             "nullable": true,
             "description": "Already Verified flag from payment gateway i.e Mswipe"
           },
+          "aggregator": {
+            "type": "string",
+            "description": "Payment gateway name i.e Simpl, Mswipe"
+          },
+          "transaction_token": {
+            "type": "string",
+            "nullable": true,
+            "description": "Transaction token of payment gateway."
+          },
           "amount": {
             "type": "integer",
             "format": "int32",
@@ -41405,15 +41465,6 @@
           "order_id": {
             "type": "string",
             "description": "Unique order id."
-          },
-          "aggregator": {
-            "type": "string",
-            "description": "Payment gateway name i.e Simpl, Mswipe"
-          },
-          "transaction_token": {
-            "type": "string",
-            "nullable": true,
-            "description": "Transaction token of payment gateway."
           }
         },
         "required": [
@@ -41425,31 +41476,31 @@
       "ChargeCustomerResponse": {
         "type": "object",
         "properties": {
-          "cart_id": {
-            "type": "string",
-            "nullable": true,
-            "description": "Cart id of customer"
-          },
-          "status": {
-            "type": "string",
-            "description": "Status of charged payment."
-          },
-          "order_id": {
-            "type": "string",
-            "description": "Unique order id."
-          },
           "message": {
             "type": "string",
             "description": "Human readable message."
-          },
-          "aggregator": {
-            "type": "string",
-            "description": "Payment gateway name i.e Simpl, Mswipe"
           },
           "delivery_address_id": {
             "type": "string",
             "nullable": true,
             "description": "Delivery adddress id of customer"
+          },
+          "aggregator": {
+            "type": "string",
+            "description": "Payment gateway name i.e Simpl, Mswipe"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of charged payment."
+          },
+          "cart_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cart id of customer"
+          },
+          "order_id": {
+            "type": "string",
+            "description": "Unique order id."
           },
           "success": {
             "type": "boolean",
@@ -41471,37 +41522,37 @@
             "type": "string",
             "description": "Payment gateway order id"
           },
-          "virtual_id": {
-            "type": "string",
-            "nullable": true,
-            "description": "Bharat QR code virtual id"
-          },
-          "merchant_order_id": {
-            "type": "string",
-            "description": "Unique fynd order id"
-          },
           "timeout": {
             "type": "integer",
             "format": "int32",
             "nullable": true,
             "description": "Payment polling timeout if not recieved response"
           },
-          "razorpay_payment_id": {
+          "merchant_order_id": {
             "type": "string",
-            "description": "Payment gateway payment id"
+            "description": "Unique fynd order id"
+          },
+          "aggregator": {
+            "type": "string",
+            "description": "Payment gateway name"
           },
           "polling_url": {
             "type": "string",
             "format": "url",
             "description": "Polling url to check payment status"
           },
-          "aggregator": {
+          "razorpay_payment_id": {
             "type": "string",
-            "description": "Payment gateway name"
+            "description": "Payment gateway payment id"
           },
           "customer_id": {
             "type": "string",
             "description": "Payment gateway customer id."
+          },
+          "virtual_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Bharat QR code virtual id"
           },
           "method": {
             "type": "string",
@@ -41526,20 +41577,14 @@
             "type": "string",
             "description": "Payment order id"
           },
-          "virtual_id": {
+          "bqr_image": {
             "type": "string",
             "nullable": true,
-            "description": "Payment virtual address."
+            "description": "Bharath qr image url."
           },
-          "amount": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "description": "Payable amount."
-          },
-          "status": {
+          "method": {
             "type": "string",
-            "description": "Status of payment."
+            "description": "Payment method"
           },
           "merchant_order_id": {
             "type": "string",
@@ -41551,42 +41596,48 @@
             "nullable": true,
             "description": "timeout."
           },
-          "razorpay_payment_id": {
+          "aggregator": {
             "type": "string",
-            "nullable": true,
-            "description": "Payment  id."
+            "description": "Payment gateway name"
           },
           "vpa": {
             "type": "string",
             "nullable": true,
             "description": "Customer vpa address"
           },
-          "polling_url": {
+          "amount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "Payable amount."
+          },
+          "status": {
             "type": "string",
-            "description": "Polling url."
+            "description": "Status of payment."
           },
           "currency": {
             "type": "string",
             "nullable": true,
             "description": "Currency code."
           },
-          "bqr_image": {
+          "polling_url": {
+            "type": "string",
+            "description": "Polling url."
+          },
+          "razorpay_payment_id": {
             "type": "string",
             "nullable": true,
-            "description": "Bharath qr image url."
-          },
-          "aggregator": {
-            "type": "string",
-            "description": "Payment gateway name"
-          },
-          "method": {
-            "type": "string",
-            "description": "Payment method"
+            "description": "Payment  id."
           },
           "customer_id": {
             "type": "string",
             "nullable": true,
             "description": "Payment gateway customer id."
+          },
+          "virtual_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment virtual address."
           },
           "success": {
             "type": "boolean",
@@ -41604,9 +41655,21 @@
       "PaymentStatusUpdateRequest": {
         "type": "object",
         "properties": {
-          "contact": {
+          "method": {
             "type": "string",
-            "description": "Customer valid mobile number"
+            "description": "Payment method"
+          },
+          "merchant_order_id": {
+            "type": "string",
+            "description": "Unique fynd order id"
+          },
+          "aggregator": {
+            "type": "string",
+            "description": "Payment gateway name"
+          },
+          "vpa": {
+            "type": "string",
+            "description": "Customer vpa address"
           },
           "amount": {
             "type": "integer",
@@ -41623,33 +41686,21 @@
             "format": "email",
             "description": "Customer valid email"
           },
-          "merchant_order_id": {
-            "type": "string",
-            "description": "Unique fynd order id"
-          },
           "order_id": {
             "type": "string",
             "description": "Payment gateway order id"
-          },
-          "vpa": {
-            "type": "string",
-            "description": "Customer vpa address"
           },
           "currency": {
             "type": "string",
             "description": "Currency code."
           },
-          "aggregator": {
-            "type": "string",
-            "description": "Payment gateway name"
-          },
           "customer_id": {
             "type": "string",
             "description": "Payment gateway customer id."
           },
-          "method": {
+          "contact": {
             "type": "string",
-            "description": "Payment method"
+            "description": "Customer valid mobile number"
           }
         },
         "required": [
@@ -41669,6 +41720,10 @@
       "PaymentStatusUpdateResponse": {
         "type": "object",
         "properties": {
+          "status": {
+            "type": "string",
+            "description": "Payment status"
+          },
           "aggregator_name": {
             "type": "string",
             "description": "Payment gateway name"
@@ -41676,10 +41731,6 @@
           "retry": {
             "type": "boolean",
             "description": "Response is successful or not."
-          },
-          "status": {
-            "type": "string",
-            "description": "Payment status"
           }
         },
         "required": [
@@ -41687,131 +41738,6 @@
           "retry",
           "status"
         ]
-      },
-      "AggregatorRoute": {
-        "type": "object",
-        "properties": {
-          "api_link": {
-            "type": "string",
-            "format": "url",
-            "nullable": true,
-            "description": "api_link"
-          },
-          "payment_flow": {
-            "type": "string",
-            "nullable": true,
-            "description": "payment_flow"
-          },
-          "data": {
-            "type": "object",
-            "nullable": true,
-            "description": "Data"
-          }
-        }
-      },
-      "PaymentFlow": {
-        "type": "object",
-        "properties": {
-          "mswipe": {
-            "nullable": true,
-            "description": "mswipe",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "rupifi": {
-            "nullable": true,
-            "description": "Rupifi",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "fynd": {
-            "nullable": true,
-            "description": "Fynd",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "simpl": {
-            "nullable": true,
-            "description": "simpl",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "ccavenue": {
-            "nullable": true,
-            "description": "Ccavenue",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "razorpay": {
-            "nullable": true,
-            "description": "Razorpay",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "juspay": {
-            "nullable": true,
-            "description": "Juspay",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "stripe": {
-            "nullable": true,
-            "description": "Stripe",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "payubiz": {
-            "nullable": true,
-            "description": "Payubiz",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "bqr_razorpay": {
-            "nullable": true,
-            "description": "BQR_Razorpay",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          },
-          "upi_razorpay": {
-            "nullable": true,
-            "description": "UPI_Razorpay",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/AggregatorRoute"
-              }
-            ]
-          }
-        }
       },
       "PaymentModeLogo": {
         "type": "object",
@@ -41835,10 +41761,59 @@
       "PaymentModeList": {
         "type": "object",
         "properties": {
-          "card_name": {
+          "card_isin": {
             "type": "string",
             "nullable": true,
-            "description": "card_name"
+            "description": "card_isin"
+          },
+          "merchant_code": {
+            "type": "string",
+            "nullable": true,
+            "description": "merchant code"
+          },
+          "fynd_vpa": {
+            "type": "string",
+            "nullable": true,
+            "description": "fynd_vpa"
+          },
+          "expired": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "expired"
+          },
+          "retry_count": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "retry_count"
+          },
+          "logo_url": {
+            "nullable": true,
+            "description": "Logo",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PaymentModeLogo"
+              }
+            ]
+          },
+          "card_number": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_number"
+          },
+          "card_token": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_token"
+          },
+          "nickname": {
+            "type": "string",
+            "nullable": true,
+            "description": "nickname"
+          },
+          "aggregator_name": {
+            "type": "string",
+            "description": "aggregator_name"
           },
           "intent_app_error_list": {
             "type": "array",
@@ -41847,85 +41822,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "card_reference": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_reference"
-          },
-          "card_token": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_token"
-          },
-          "card_type": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_type"
-          },
-          "expired": {
-            "type": "boolean",
-            "nullable": true,
-            "description": "expired"
-          },
-          "fynd_vpa": {
-            "type": "string",
-            "nullable": true,
-            "description": "fynd_vpa"
-          },
-          "card_fingerprint": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_fingerprint"
-          },
-          "display_name": {
-            "type": "string",
-            "nullable": true,
-            "description": "display name"
-          },
-          "code": {
-            "type": "string",
-            "nullable": true,
-            "description": "code"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true,
-            "description": "name"
-          },
-          "display_priority": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "description": "Dispaly Priority"
-          },
-          "card_number": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_number"
-          },
-          "card_issuer": {
-            "type": "string",
-            "nullable": true,
-            "description": "card_issuer"
-          },
-          "retry_count": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "description": "retry_count"
-          },
-          "card_brand_image": {
-            "type": "string",
-            "format": "url",
-            "nullable": true,
-            "description": "card_brand_image"
-          },
-          "timeout": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true,
-            "description": "timeout"
           },
           "exp_year": {
             "type": "integer",
@@ -41938,33 +41834,41 @@
             "nullable": true,
             "description": "intent_flow"
           },
-          "nickname": {
+          "card_brand": {
             "type": "string",
             "nullable": true,
-            "description": "nickname"
+            "description": "card_brand"
           },
-          "card_isin": {
+          "card_type": {
             "type": "string",
             "nullable": true,
-            "description": "card_isin"
+            "description": "card_type"
           },
-          "card_id": {
+          "code": {
             "type": "string",
             "nullable": true,
-            "description": "card_id"
+            "description": "code"
           },
-          "logo_url": {
+          "timeout": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true,
-            "description": "Logo",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PaymentModeLogo"
-              }
-            ]
+            "description": "timeout"
           },
-          "aggregator_name": {
+          "name": {
             "type": "string",
-            "description": "aggregator_name"
+            "nullable": true,
+            "description": "name"
+          },
+          "card_reference": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_reference"
+          },
+          "display_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "display name"
           },
           "exp_month": {
             "type": "integer",
@@ -41972,15 +41876,37 @@
             "nullable": true,
             "description": "exp_month"
           },
-          "card_brand": {
+          "card_issuer": {
             "type": "string",
             "nullable": true,
-            "description": "card_brand"
+            "description": "card_issuer"
           },
-          "merchant_code": {
+          "display_priority": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "Dispaly Priority"
+          },
+          "card_name": {
             "type": "string",
             "nullable": true,
-            "description": "merchant code"
+            "description": "card_name"
+          },
+          "card_brand_image": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "card_brand_image"
+          },
+          "card_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_id"
+          },
+          "card_fingerprint": {
+            "type": "string",
+            "nullable": true,
+            "description": "card_fingerprint"
           }
         },
         "required": [
@@ -41990,27 +41916,7 @@
       "RootPaymentMode": {
         "type": "object",
         "properties": {
-          "list": {
-            "type": "array",
-            "description": "Payment mode",
-            "items": {
-              "$ref": "#/components/schemas/PaymentModeList"
-            }
-          },
-          "display_name": {
-            "type": "string",
-            "description": "Payment mode display name"
-          },
-          "aggregator_name": {
-            "type": "string",
-            "nullable": true,
-            "description": "Dispaly Priority"
-          },
-          "name": {
-            "type": "string",
-            "description": "Payment mode name"
-          },
-          "add_card_enabled": {
+          "anonymous_enable": {
             "type": "boolean",
             "nullable": true,
             "description": "Annonymous card flag"
@@ -42020,10 +41926,30 @@
             "format": "int32",
             "description": "Dispaly Priority"
           },
-          "anonymous_enable": {
+          "list": {
+            "type": "array",
+            "description": "Payment mode",
+            "items": {
+              "$ref": "#/components/schemas/PaymentModeList"
+            }
+          },
+          "add_card_enabled": {
             "type": "boolean",
             "nullable": true,
             "description": "Annonymous card flag"
+          },
+          "name": {
+            "type": "string",
+            "description": "Payment mode name"
+          },
+          "aggregator_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Dispaly Priority"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Payment mode display name"
           }
         },
         "required": [
@@ -42032,9 +41958,141 @@
           "name"
         ]
       },
+      "AggregatorRoute": {
+        "type": "object",
+        "properties": {
+          "payment_flow": {
+            "type": "string",
+            "nullable": true,
+            "description": "payment_flow"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "description": "Data"
+          },
+          "api_link": {
+            "type": "string",
+            "format": "url",
+            "nullable": true,
+            "description": "api_link"
+          }
+        }
+      },
+      "PaymentFlow": {
+        "type": "object",
+        "properties": {
+          "bqr_razorpay": {
+            "nullable": true,
+            "description": "BQR_Razorpay",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "simpl": {
+            "nullable": true,
+            "description": "simpl",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "stripe": {
+            "nullable": true,
+            "description": "Stripe",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "juspay": {
+            "nullable": true,
+            "description": "Juspay",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "razorpay": {
+            "nullable": true,
+            "description": "Razorpay",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "upi_razorpay": {
+            "nullable": true,
+            "description": "UPI_Razorpay",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "fynd": {
+            "nullable": true,
+            "description": "Fynd",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "ccavenue": {
+            "nullable": true,
+            "description": "Ccavenue",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "payubiz": {
+            "nullable": true,
+            "description": "Payubiz",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "rupifi": {
+            "nullable": true,
+            "description": "Rupifi",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          },
+          "mswipe": {
+            "nullable": true,
+            "description": "mswipe",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AggregatorRoute"
+              }
+            ]
+          }
+        }
+      },
       "PaymentOptionAndFlow": {
         "type": "object",
         "properties": {
+          "payment_option": {
+            "type": "array",
+            "description": "Payment options",
+            "items": {
+              "$ref": "#/components/schemas/RootPaymentMode"
+            }
+          },
           "payment_flows": {
             "description": "payment_flows",
             "allOf": [
@@ -42042,13 +42100,6 @@
                 "$ref": "#/components/schemas/PaymentFlow"
               }
             ]
-          },
-          "payment_option": {
-            "type": "array",
-            "description": "Payment options",
-            "items": {
-              "$ref": "#/components/schemas/RootPaymentMode"
-            }
           }
         },
         "required": [
@@ -42122,17 +42173,17 @@
             "type": "string",
             "description": "Beneficiary large Logo"
           },
-          "id": {
+          "name": {
             "type": "string",
-            "description": " "
+            "description": " Beneficiary Name"
           },
           "display_name": {
             "type": "boolean",
             "description": "Beneficiary Display Name"
           },
-          "name": {
+          "id": {
             "type": "string",
-            "description": " Beneficiary Name"
+            "description": " "
           }
         },
         "required": [
@@ -42145,16 +42196,16 @@
       "TransferModeDetails": {
         "type": "object",
         "properties": {
-          "display_name": {
-            "type": "string",
-            "description": "Beneficiary Mode Name"
-          },
           "items": {
             "description": "Beneficiary Mode Items",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TransferItemsDetails"
             }
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Beneficiary Mode Name"
           }
         },
         "required": [
@@ -42179,13 +42230,13 @@
       "UpdateRefundTransferModeRequest": {
         "type": "object",
         "properties": {
-          "transfer_mode": {
-            "type": "string",
-            "description": "Transfer Mode of the Beneficiary to be added"
-          },
           "enable": {
             "type": "boolean",
             "description": "True for enabling the Transfer Mode"
+          },
+          "transfer_mode": {
+            "type": "string",
+            "description": "Transfer Mode of the Beneficiary to be added"
           }
         },
         "required": [
@@ -42205,45 +42256,30 @@
       "OrderBeneficiaryDetails": {
         "type": "object",
         "properties": {
+          "delights_user_name": {
+            "type": "string",
+            "description": "User Id Who filled the Beneficiary "
+          },
           "modified_on": {
             "type": "string",
             "description": "MOdification Date of Beneficiary"
           },
-          "account_no": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "description": " "
+          },
+          "bank_name": {
             "type": "string",
-            "description": "Account Number"
+            "description": "Bank Name Of Account"
           },
           "ifsc_code": {
             "type": "string",
             "description": "Ifsc Code Of Account"
           },
-          "display_name": {
+          "account_holder": {
             "type": "string",
-            "description": "Display Name Of Account"
-          },
-          "mobile": {
-            "type": "boolean",
-            "description": "MObile no of User"
-          },
-          "title": {
-            "type": "string",
-            "description": "Title Of Account"
-          },
-          "email": {
-            "type": "string",
-            "description": "EMail of User"
-          },
-          "address": {
-            "type": "string",
-            "description": "Address of User"
-          },
-          "transfer_mode": {
-            "type": "string",
-            "description": "Transfer Mode Of Account"
-          },
-          "delights_user_name": {
-            "type": "string",
-            "description": "User Id Who filled the Beneficiary "
+            "description": "Account Holder Name"
           },
           "created_on": {
             "type": "string",
@@ -42253,30 +42289,45 @@
             "type": "string",
             "description": "Benenficiary Id"
           },
-          "is_active": {
+          "mobile": {
             "type": "boolean",
-            "description": "Boolean Flag whether Beneficiary set or not"
+            "description": "MObile no of User"
           },
-          "account_holder": {
+          "comment": {
+            "type": "boolean",
+            "description": "Remarks"
+          },
+          "address": {
             "type": "string",
-            "description": "Account Holder Name"
+            "description": "Address of User"
+          },
+          "transfer_mode": {
+            "type": "string",
+            "description": "Transfer Mode Of Account"
+          },
+          "account_no": {
+            "type": "string",
+            "description": "Account Number"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Display Name Of Account"
+          },
+          "title": {
+            "type": "string",
+            "description": "Title Of Account"
+          },
+          "email": {
+            "type": "string",
+            "description": "EMail of User"
           },
           "branch_name": {
             "type": "boolean",
             "description": "Branch Name Of Account"
           },
-          "bank_name": {
-            "type": "string",
-            "description": "Bank Name Of Account"
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32",
-            "description": " "
-          },
-          "comment": {
+          "is_active": {
             "type": "boolean",
-            "description": "Remarks"
+            "description": "Boolean Flag whether Beneficiary set or not"
           },
           "subtitle": {
             "type": "string",
@@ -42346,17 +42397,17 @@
       "IfscCodeResponse": {
         "type": "object",
         "properties": {
-          "success": {
-            "type": "boolean",
-            "description": "Response is successful or not"
+          "bank_name": {
+            "type": "string",
+            "description": "Bank Name Of Account"
           },
           "branch_name": {
             "type": "string",
             "description": "Branch Name Of Account"
           },
-          "bank_name": {
-            "type": "string",
-            "description": "Bank Name Of Account"
+          "success": {
+            "type": "boolean",
+            "description": "Response is successful or not"
           }
         },
         "required": [
@@ -42389,17 +42440,17 @@
       "AddBeneficiaryViaOtpVerificationRequest": {
         "type": "object",
         "properties": {
-          "otp": {
+          "hash_key": {
             "type": "string",
-            "description": "Otp sent to the given Mobile No"
+            "description": "Hash key of the beneficiary Id"
           },
           "request_id": {
             "type": "string",
             "description": "Request Id sent in "
           },
-          "hash_key": {
+          "otp": {
             "type": "string",
-            "description": "Hash key of the beneficiary Id"
+            "description": "Otp sent to the given Mobile No"
           }
         },
         "required": [
@@ -42427,13 +42478,13 @@
       "WrongOtpError": {
         "type": "object",
         "properties": {
-          "description": {
-            "type": "string",
-            "description": "Wrong OTP Code"
-          },
           "is_verified_flag": {
             "type": "boolean",
             "description": "Vefified flag."
+          },
+          "description": {
+            "type": "string",
+            "description": "Wrong OTP Code"
           },
           "success": {
             "type": "string",
@@ -42449,31 +42500,15 @@
       "BeneficiaryModeDetails": {
         "type": "object",
         "properties": {
-          "account_no": {
+          "bank_name": {
             "type": "string",
-            "description": "Account NUmber of the Account Holder"
+            "description": "Bank Name of the Account"
           },
-          "address": {
-            "type": "string",
-            "description": "Address of the User"
-          },
-          "ifsc_code": {
-            "type": "string",
-            "description": "Ifsc Code of the Account"
-          },
-          "comment": {
-            "type": "string",
-            "description": "Remarks added by The user"
-          },
-          "vpa": {
+          "wallet": {
             "type": "string",
             "nullable": true
           },
-          "mobile": {
-            "type": "string",
-            "description": "Moblie Number of the User"
-          },
-          "wallet": {
+          "vpa": {
             "type": "string",
             "nullable": true
           },
@@ -42481,17 +42516,33 @@
             "type": "string",
             "description": "Email of the Account Holder"
           },
-          "account_holder": {
+          "mobile": {
             "type": "string",
-            "description": "Name of the Account Holder"
+            "description": "Moblie Number of the User"
           },
           "branch_name": {
             "type": "string",
             "description": "Branch Name of the Account"
           },
-          "bank_name": {
+          "comment": {
             "type": "string",
-            "description": "Bank Name of the Account"
+            "description": "Remarks added by The user"
+          },
+          "address": {
+            "type": "string",
+            "description": "Address of the User"
+          },
+          "account_no": {
+            "type": "string",
+            "description": "Account NUmber of the Account Holder"
+          },
+          "ifsc_code": {
+            "type": "string",
+            "description": "Ifsc Code of the Account"
+          },
+          "account_holder": {
+            "type": "string",
+            "description": "Name of the Account Holder"
           }
         },
         "required": [
@@ -42507,12 +42558,9 @@
       "AddBeneficiaryDetailsRequest": {
         "type": "object",
         "properties": {
-          "otp": {
-            "type": "string"
-          },
-          "transfer_mode": {
-            "type": "string",
-            "description": "Transfer Mode of the Beneficiary to be added"
+          "delights": {
+            "type": "boolean",
+            "description": "True if  beneficiary to be added by delights or False if by User"
           },
           "details": {
             "description": "Beneficiary bank details",
@@ -42522,20 +42570,23 @@
               }
             ]
           },
+          "request_id": {
+            "type": "string"
+          },
           "order_id": {
             "type": "string",
             "description": "Merchant Order Id"
           },
-          "delights": {
-            "type": "boolean",
-            "description": "True if  beneficiary to be added by delights or False if by User"
-          },
-          "request_id": {
-            "type": "string"
+          "transfer_mode": {
+            "type": "string",
+            "description": "Transfer Mode of the Beneficiary to be added"
           },
           "shipment_id": {
             "type": "string",
             "description": "Shipment Id of the respective Merchant Order Id"
+          },
+          "otp": {
+            "type": "string"
           }
         },
         "required": [
@@ -42552,13 +42603,13 @@
           "is_verified_flag": {
             "type": "boolean"
           },
-          "message": {
-            "type": "string",
-            "description": "Response message"
-          },
           "data": {
             "type": "object",
             "description": "Refund account data."
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
           },
           "success": {
             "type": "boolean",
@@ -42573,6 +42624,12 @@
       "BankDetailsForOTP": {
         "type": "object",
         "properties": {
+          "bank_name": {
+            "type": "string"
+          },
+          "branch_name": {
+            "type": "string"
+          },
           "account_no": {
             "type": "string"
           },
@@ -42580,12 +42637,6 @@
             "type": "string"
           },
           "account_holder": {
-            "type": "string"
-          },
-          "branch_name": {
-            "type": "string"
-          },
-          "bank_name": {
             "type": "string"
           }
         },
@@ -42615,13 +42666,13 @@
       "WalletOtpRequest": {
         "type": "object",
         "properties": {
-          "country_code": {
-            "type": "string",
-            "description": "Country Code of the Mobile Number"
-          },
           "mobile": {
             "type": "string",
             "description": "Wallet Moblie Number of the User"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Country Code of the Mobile Number"
           }
         },
         "required": [
@@ -43329,6 +43380,9 @@
           },
           "company_id": {
             "type": "integer"
+          },
+          "company_name": {
+            "type": "string"
           }
         }
       },
