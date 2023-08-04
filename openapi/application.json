@@ -16397,7 +16397,11 @@
                     "quantity": 6
                   },
                   "is_gift": true,
-                  "is_cod": false
+                  "is_cod": false,
+                  "delivery_promise": {
+                    "min": "2023-08-03T18:19:23",
+                    "max": "2023-08-04T14:19:23"
+                  }
                 }
               }
             }
@@ -38988,6 +38992,26 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SendEmailOtpRequestSchema"
+              },
+              "examples": {
+                "send email otp success": {
+                  "value": {
+                    "email": "test@gmail.com",
+                    "captcha_code": "recaptcha",
+                    "token": "resend_token",
+                    "action": "send",
+                    "register_token": "registerToken123"
+                  }
+                },
+                "send email otp failure": {
+                  "value": {
+                    "email": "",
+                    "captcha_code": "recaptcha",
+                    "token": "resend_token",
+                    "action": "send",
+                    "register_token": "registerToken123"
+                  }
+                }
               }
             }
           }
@@ -42511,16 +42535,24 @@
         "type": "object",
         "properties": {
           "min": {
-            "type": "number"
+            "type": "number",
+            "description": "The minimum price for the product across stores.",
+            "example": 20
           },
           "currency_symbol": {
-            "type": "string"
+            "type": "string",
+            "description": "The currency symbol for the currency in which the product is available.",
+            "example": "₹"
           },
           "currency_code": {
-            "type": "string"
+            "type": "string",
+            "description": "The currency code for the currency in which the product is available.",
+            "example": "INR"
           },
           "max": {
-            "type": "number"
+            "type": "number",
+            "description": "The maximum price for the product across stores.",
+            "example": 200
           }
         }
       },
@@ -42532,6 +42564,42 @@
           },
           "marked": {
             "$ref": "#/components/schemas/Price"
+          }
+        }
+      },
+      "ProductSizesPrice": {
+        "type": "object",
+        "description": "Contains price information for product sizes.",
+        "properties": {
+          "effective": {
+            "$ref": "#/components/schemas/Price",
+            "description": "The effective price object for the product.",
+            "example": {
+              "currency_code": "INR",
+              "currency_symbol": "₹",
+              "max": 90,
+              "min": 70
+            }
+          },
+          "marked": {
+            "$ref": "#/components/schemas/Price",
+            "description": "The marked price object for the product.",
+            "example": {
+              "currency_code": "INR",
+              "currency_symbol": "₹",
+              "max": 150,
+              "min": 140
+            }
+          },
+          "selling": {
+            "$ref": "#/components/schemas/Price",
+            "description": "The selling price object for the product.",
+            "example": {
+              "currency_code": "INR",
+              "currency_symbol": "₹",
+              "max": 120,
+              "min": 115
+            }
           }
         }
       },
@@ -42772,6 +42840,43 @@
           "unit"
         ]
       },
+      "DiscountMeta": {
+        "type": "object",
+        "description": "Holds information about the discount countdown timer for a product.",
+        "required": [
+          "timer"
+        ],
+        "properties": {
+          "timer": {
+            "type": "boolean",
+            "description": "Determines whether the discount countdown is visible or not.",
+            "example": true
+          },
+          "start_timer_in_minutes": {
+            "type": "number",
+            "description": "The time in minutes before the discount ends when the countdown timer should start.",
+            "example": 70
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The start time of the live discount.",
+            "example": "2023-07-31T12:40:00Z"
+          },
+          "end": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The end time of the live discount.",
+            "example": "2023-07-31T18:30:00Z"
+          }
+        },
+        "example": {
+          "timer": true,
+          "start_timer_in_minutes": 67,
+          "start": "2022-05-03T10:00:00Z",
+          "end": "2022-05-04T11:02:00Z"
+        }
+      },
       "ProductSize": {
         "type": "object",
         "properties": {
@@ -42906,7 +43011,7 @@
             }
           },
           "price": {
-            "$ref": "#/components/schemas/ProductListingPrice"
+            "$ref": "#/components/schemas/ProductSizesPrice"
           },
           "size_chart": {
             "$ref": "#/components/schemas/SizeChart"
@@ -42922,6 +43027,9 @@
           },
           "stores": {
             "$ref": "#/components/schemas/ProductSizeStores"
+          },
+          "discount_meta": {
+            "$ref": "#/components/schemas/DiscountMeta"
           }
         }
       },
@@ -44991,13 +45099,29 @@
         "type": "object",
         "properties": {
           "effective": {
-            "type": "number"
+            "type": "number",
+            "description": "The effective or final price for the product at the given pincode.",
+            "example": 117
           },
-          "currency": {
-            "type": "string"
+          "currency_code": {
+            "type": "string",
+            "description": "The currency code for which the product is available",
+            "example": "INR"
+          },
+          "currency_symbol": {
+            "type": "string",
+            "description": "The currency symbol for the currency in which the product is available.",
+            "example": "₹"
           },
           "marked": {
-            "type": "number"
+            "type": "number",
+            "description": "The marked price of the product.",
+            "example": 234
+          },
+          "selling": {
+            "type": "number",
+            "description": "The selling price of the product.",
+            "example": 190
           }
         }
       },
@@ -45043,6 +45167,17 @@
           },
           "count": {
             "type": "integer"
+          }
+        }
+      },
+      "PromiseSchema": {
+        "type": "object",
+        "properties": {
+          "min": {
+            "type": "string"
+          },
+          "max": {
+            "type": "string"
           }
         }
       },
@@ -45094,6 +45229,9 @@
           "price_per_piece": {
             "$ref": "#/components/schemas/ProductStockPriceV3"
           },
+          "discount_meta": {
+            "$ref": "#/components/schemas/DiscountMeta"
+          },
           "discount": {
             "type": "string"
           },
@@ -45123,6 +45261,9 @@
           },
           "seller": {
             "$ref": "#/components/schemas/SellerV3"
+          },
+          "delivery_promise": {
+            "$ref": "#/components/schemas/PromiseSchema"
           }
         }
       },
@@ -58480,6 +58621,9 @@
             "type": "string"
           },
           "register_token": {
+            "type": "string"
+          },
+          "captcha_code": {
             "type": "string"
           }
         }
