@@ -1,7 +1,7 @@
 {
   "info": {
     "title": "Fynd Platform's Application Side APIs",
-    "version": "1.3.4-beta.1",
+    "version": "1.3.5-beta.2",
     "description": "Fynd Platform's Application Side APIs"
   },
   "openapi": "3.0.2",
@@ -8865,6 +8865,15 @@
                       "type": "page"
                     },
                     "_custom_json": {}
+                  },
+                  "department": {
+                    "name": "Electronics",
+                    "uid": 1,
+                    "logo": {
+                      "type": "image",
+                      "url": "https://hdn-1.fynd.com/media/logo/brand/original/12391_0d956c6c71a4427895c15e44cba82f88.jpg"
+                    },
+                    "slug": "electronics"
                   },
                   "uid": 1,
                   "slug": "benchmark-collaborative-paradigms",
@@ -19442,7 +19451,7 @@
         }
       }
     },
-    "/service/application/assets/v1.0/namespaces/{namespace}/upload/start/": {
+    "/service/application/assets/v1.0/namespaces/{namespace}/upload/start": {
       "post": {
         "summary": "startUpload | Initiates an upload and returns a storage link that is valid for 30 minutes. You can use the storage link to make subsequent upload request with file buffer or blob.",
         "description": "Use this API to perform the first step of uploading (i.e. **Start**) an arbitrarily sized buffer or blob.\n\nThe three major steps are:\n* Start\n* Upload\n* Complete\n\n### Start\nInitiates the assets upload using `startUpload`.\nIt returns a storage link in response.\n\n### Upload\nUse the storage link to upload a file (Buffer or Blob) to the File Storage.\nMake a `PUT` request on storage link received from `startUpload` API with the file (Buffer or Blob) in the request body.\n\n### Complete\nAfter successfully upload, call the `completeUpload` API to finish the upload process.\nThis operation will return the URL of the uploaded file.\n",
@@ -19457,36 +19466,130 @@
             "required": true,
             "schema": {
               "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "test"
+              },
+              "failure": {
+                "value": "test123"
+              }
             }
           }
         ],
         "requestBody": {
-          "description": "Pass the name of the file, type of content, size of the file (in bytes), and tags (if applicable) in the request body as shown below.",
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/StartRequest"
+              },
+              "examples": {
+                "success": {
+                  "value": {
+                    "file_name": "shirt.png",
+                    "content_type": "application/pdf",
+                    "size": 500,
+                    "params": {
+                      "subpath": "test"
+                    },
+                    "tags": [
+                      "clothing",
+                      "men"
+                    ]
+                  }
+                },
+                "failure": {
+                  "value": {
+                    "file_name": "shirt.png",
+                    "content_type": "image/png",
+                    "namespace": "products-item-assets",
+                    "size": 500,
+                    "params": {
+                      "subpath": "test"
+                    },
+                    "tags": [
+                      "clothing",
+                      "men"
+                    ]
+                  }
+                }
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Success. Next, call the `completeUpload` API and pass the response payload of this API to finish the upload process.",
+            "description": "Success. Returns a response containing relaving and absolute_url of storage service",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StartResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "file_name": "shirt.png",
+                      "file_path": "/path/qwertyuiop-shirt.png",
+                      "content_type": "image/png",
+                      "method": "PUT",
+                      "namespace": "products-item-images",
+                      "operation": "putObject",
+                      "tags": [
+                        "clothing",
+                        "shirt"
+                      ],
+                      "size": 9999,
+                      "cdn": {
+                        "url": "https://xxx.xxx.xxx/products/pictures/free/original/qwertyuiop-shirt.png",
+                        "absolute_url": "https://xxx.xxx.xxx/products/pictures/free/original/qwertyuiop-shirt.png",
+                        "relative_url": "products/pictures/free/original/qwertyuiop-shirt.png"
+                      },
+                      "upload": {
+                        "expiry": 5000,
+                        "url": "https://xxx.xxx.xxx/products/pictures/free/original/qwertyuiop-shirt.png?AWSAccessKeyId=xxx&Content-Type=image%2Fpng&Expires=5000&Signature=xxx&x-amz-acl=public-read"
+                      }
+                    }
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Failed",
+            "description": "Missing or incorrect required field",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FailedResponse"
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "valid_namespaces": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "failure": {
+                    "value": {
+                      "status": "error",
+                      "message": "params.subpath required",
+                      "valid_namespaces": [
+                        "misc",
+                        "admin-catalogue-import-export",
+                        "admin-catalogue-assets"
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -19494,7 +19597,7 @@
         }
       }
     },
-    "/service/application/assets/v1.0/namespaces/{namespace}/upload/complete/": {
+    "/service/application/assets/v1.0/namespaces/{namespace}/upload/complete": {
       "post": {
         "summary": "completeUpload | Completes the upload process. After successfully uploading a file, call this API to finish the upload process.",
         "description": "Use this API to perform the third step of uploading (i.e. **Complete**) an arbitrarily sized buffer or blob.\n\nThe three major steps are:\n* Start\n* Upload\n* Complete\n\n### Start\nInitiates the assets upload using `startUpload`.\nIt returns a storage link in response.\n\n### Upload\nUse the storage link to upload a file (Buffer or Blob) to the File Storage.\nMake a `PUT` request on storage link received from `startUpload` API with the file (Buffer or Blob) in the request body.\n\n### Complete\nAfter successfully upload, call the `completeUpload` API to finish the upload process.\nThis operation will return the URL of the uploaded file.\n",
@@ -19509,15 +19612,48 @@
             "required": true,
             "schema": {
               "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "test"
+              },
+              "failure": {
+                "value": "test123"
+              }
             }
           }
         ],
         "requestBody": {
-          "description": "Pass the entire response object of the startUpload API in the request body as shown below.",
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/StartResponse"
+              },
+              "examples": {
+                "success": {
+                  "value": {
+                    "file_name": "shirt.png",
+                    "file_path": "/path/qwertyuiop-shirt.png",
+                    "content_type": "image/png",
+                    "method": "PUT",
+                    "namespace": "test",
+                    "operation": "putObject",
+                    "tags": [
+                      "clothing",
+                      "shirt"
+                    ],
+                    "size": 9999,
+                    "cdn": {
+                      "url": "https://hdn-1.jiomarketx0.de/x0/support-ticket-private/file/free/original/myl1-tBeF-download.jpeg\",",
+                      "absolute_url": "https://hdn-1.jiomarketx0.de/x0/support-ticket-private/file/free/original/myl1-tBeF-download.jpeg\",",
+                      "relative_url": "addsale/support-ticket-private/file/free/original/myl1-tBeF-download.jpeg"
+                    },
+                    "upload": {
+                      "expiry": 5000,
+                      "url": "https://hdn-1.jiomarketx0.de/x0/support-ticket-private/file/free/original/myl1-tBeF-download.jpeg"
+                    }
+                  }
+                }
               }
             }
           }
@@ -19529,16 +19665,140 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CompleteResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "success": true,
+                      "_id": "xxxxxxxxxxxxxxxxxxxxxx",
+                      "file_name": "shirt.png",
+                      "file_path": "/path/qwertyuiop-shirt.png",
+                      "content_type": "image/png",
+                      "namespace": "products-item-images",
+                      "operation": "putObject",
+                      "company_id": 2,
+                      "tags": [
+                        "clothing",
+                        "shirt"
+                      ],
+                      "size": 9999,
+                      "cdn": {
+                        "url": "https://xxx.xxx.xxx/products/pictures/free/original/qwertyuiop-shirt.png",
+                        "absolute_url": "https://xxx.xxx.xxx/products/pictures/free/original/qwertyuiop-shirt.png",
+                        "relative_url": "products/pictures/free/original/qwertyuiop-shirt.png"
+                      },
+                      "upload": {
+                        "expiry": 5000,
+                        "url": "https://xxx.xxx.xxx/products/pictures/free/original/qwertyuiop-shirt.png?AWSAccessKeyId=xxx&Content-Type=image%2Fpng&Expires=5000&Signature=xxx&x-amz-acl=public-read"
+                      },
+                      "created_on": "2020-02-03T09:50:04.240Z",
+                      "modified_on": "2020-02-03T09:50:04.240Z",
+                      "created_by": {
+                        "username": "app@fynd.com"
+                      }
+                    }
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Failed",
+            "description": "cdn is not passed correctly",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FailedResponse"
+                  "type": "object",
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "_message": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "errors": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string"
+                            },
+                            "path": {
+                              "type": "string"
+                            },
+                            "properties": {
+                              "type": "object",
+                              "properties": {
+                                "message": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "type": "string"
+                                },
+                                "path": {
+                                  "type": "string"
+                                },
+                                "enumValues": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "failure": {
+                    "value": {
+                      "errors": {
+                        "namespace": {
+                          "name": "ValidatorError",
+                          "message": "`test123` is not a valid enum value for path `namespace`.",
+                          "properties": {
+                            "message": "`test123` is not a valid enum value for path `namespace`.",
+                            "type": "enum",
+                            "enumValues": [
+                              "misc",
+                              "admin-catalogue-import-export",
+                              "admin-catalogue-assets"
+                            ],
+                            "path": "namespace",
+                            "value": "test123"
+                          },
+                          "kind": "enum",
+                          "path": "namespace",
+                          "value": "test123"
+                        }
+                      },
+                      "_message": "Assets validation failed",
+                      "name": "ValidationError",
+                      "message": "Assets validation failed: namespace: `test123` is not a valid enum value for path `namespace`."
+                    }
+                  }
                 }
               }
             }
@@ -19546,7 +19806,7 @@
         }
       }
     },
-    "/service/application/assets/v1.0/sign-urls/": {
+    "/service/application/assets/v1.0/sign-urls": {
       "post": {
         "summary": "signUrls | Explain here",
         "description": "Describe here",
@@ -19558,6 +19818,16 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SignUrlRequest"
+              },
+              "examples": {
+                "success": {
+                  "value": {
+                    "expiry": 5000,
+                    "urls": [
+                      "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/x0/documents/manifest/PDFs/test/s3EtYk5p9-new_fee.pdf"
+                    ]
+                  }
+                }
               }
             }
           }
@@ -19569,16 +19839,19 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SignUrlResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Failed",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FailedResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "urls": [
+                        {
+                          "url": "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/x0/documents/manifest/PDFs/test/s3EtYk5p9-new_fee.pdf",
+                          "signed_url": "https://fynd-staging-assets-private.s3-accelerate.amazonaws.com/addsale/v2/falling-surf-7c8bb8/fyndnp/wrkr/x0/documents/manifest/PDFs/test/s3EtYk5p9-new_fee.pdf",
+                          "expiry": 1800
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -38525,6 +38798,89 @@
         }
       }
     },
+    "/service/application/user/authentication/v1.0/login/password/forgot": {
+      "post": {
+        "summary": "resetForgotPassword | Reset forgot Password",
+        "description": "Use this API to reset a password using the code sent on email or SMS.",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequestSchema"
+              },
+              "examples": {
+                "reset forgot password success": {
+                  "value": {
+                    "code": "test_code",
+                    "password": "mypassword"
+                  }
+                },
+                "reset forgot password failure": {
+                  "value": {
+                    "code": "",
+                    "password": "mypassword"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Check the example shown below or refer `ResetForgotPasswordSuccess` for more details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetForgotPasswordSuccess"
+                },
+                "examples": {
+                  "reset forgot password success": {
+                    "$ref": "#/components/examples/ResetForgotPassword"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Bad request. See the error object in the response body for specific reason",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "reset forgot password failure": {
+                    "value": {
+                      "message": "Invalid Code."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "reset forgot password failure": {
+                    "value": {
+                      "message": "Exception"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/application/user/authentication/v1.0/login/password/reset/token": {
       "post": {
         "summary": "sendResetToken | Reset Password using token",
@@ -38994,6 +39350,111 @@
         }
       }
     },
+    "/service/application/user/authentication/v1.0/otp/forgot/mobile/send": {
+      "post": {
+        "summary": "sendForgotOTPOnMobile | Send Forgot OTP on mobile",
+        "description": "Use this API to send an Forgot OTP to a mobile number.",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "description": "Request body must contain mobile no, country code. Refer `SendMobileForgotOtpRequestSchema` for more details.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMobileForgotOtpRequestSchema"
+              },
+              "examples": {
+                "send forgot otp on mobile success": {
+                  "value": {
+                    "mobile": "8652523958",
+                    "country_code": "91",
+                    "token": "resend_token"
+                  }
+                },
+                "send forgot otp on mobile failure": {
+                  "value": {
+                    "mobile": "",
+                    "country_code": "91",
+                    "token": "resend_token"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "description": "ID of the application",
+            "schema": {
+              "type": "string",
+              "default": "Fynd"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a JSON object as shown below. Refer `OtpSuccess` for more details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpSuccess"
+                },
+                "examples": {
+                  "send forgot otp on mobile success": {
+                    "value": {
+                      "success": true,
+                      "request_id": "01503005aeab87cbed93d40f46cc2749",
+                      "message": "OTP sent",
+                      "mobile": "8652523958",
+                      "country_code": "91",
+                      "resend_timer": 30,
+                      "resend_token": "18fc3d60-66e5-11eb-9399-0312fbf2c2a6"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Bad request. See the error object in the response body for specific reason",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "send forgot otp on mobile failure": {
+                    "value": {
+                      "message": "Invalid Number"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "send forgot otp on mobile failure": {
+                    "value": {
+                      "message": "Exception"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/application/user/authentication/v1.0/otp/mobile/verify": {
       "post": {
         "summary": "verifyMobileOTP | Verify OTP on mobile",
@@ -39051,6 +39512,100 @@
         }
       }
     },
+    "/service/application/user/authentication/v1.0/otp/forgot/mobile/verify": {
+      "post": {
+        "summary": "verifyMobileForgotOTP | Verify Forgot OTP on mobile",
+        "description": "Use this API to verify the Forgot OTP received on a mobile number.",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyMobileForgotOtpRequestSchema"
+              },
+              "examples": {
+                "verify forgot otp on mobile success": {
+                  "value": {
+                    "otp": "2313",
+                    "request_id": "01503005aeab87cbed93d40f46cc2749"
+                  }
+                },
+                "verify forgot otp on mobile failure": {
+                  "value": {
+                    "otp": "",
+                    "request_id": "01503005aeab87cbed93d40f46cc2749"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "description": "ID of the application",
+            "schema": {
+              "type": "string",
+              "default": "Fynd"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a JSON object as shown below. Refer `VerifyForgotOtpSuccess` for more details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyForgotOtpSuccess"
+                },
+                "examples": {
+                  "verify forgot otp on mobile success": {
+                    "$ref": "#/components/examples/VerifyForgotOTP"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Bad request. See the error object in the response body for specific reason",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "verify forgot otp on mobile failure": {
+                    "value": {
+                      "message": "Invalid request params"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "verify forgot otp on mobile failure": {
+                    "value": {
+                      "message": "Exception"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/application/user/authentication/v1.0/otp/email/send": {
       "post": {
         "summary": "sendOTPOnEmail | Send OTP on email",
@@ -39059,7 +39614,6 @@
           "User"
         ],
         "requestBody": {
-          "description": "Check the example shown below or refer `SendEmailOtpRequestSchema` for more details.",
           "content": {
             "application/json": {
               "schema": {
@@ -39122,6 +39676,104 @@
         }
       }
     },
+    "/service/application/user/authentication/v1.0/otp/forgot/email/send": {
+      "post": {
+        "summary": "sendForgotOTPOnEmail | Send Forgot OTP on email",
+        "description": "Use this API to send an Forgot OTP to an email ID.",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailForgotOtpRequestSchema"
+              },
+              "examples": {
+                "send forgot otp on email success": {
+                  "value": {
+                    "email": "test@gmail.com",
+                    "token": "resend_token",
+                    "action": "send"
+                  }
+                },
+                "send forgot otp on email failure": {
+                  "value": {
+                    "email": "",
+                    "token": "resend_token",
+                    "action": "send"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "description": "ID of the application",
+            "schema": {
+              "type": "string",
+              "default": "Fynd"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a JSON object as shown below. Refer `EmailOtpSuccess` for more details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailOtpSuccess"
+                },
+                "examples": {
+                  "send forgot otp on email success": {
+                    "value": {
+                      "success": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Bad request. See the error object in the response body for specific reason",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "send forgot otp on email failure": {
+                    "value": {
+                      "message": "Invalid email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "send forgot otp on email failure": {
+                    "value": {
+                      "message": "Exception"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/application/user/authentication/v1.0/otp/email/verify": {
       "post": {
         "summary": "verifyEmailOTP | Verify OTP on email",
@@ -39138,7 +39790,7 @@
               },
               "example": {
                 "otp": "2313",
-                "request_id": "01503005aeab87cbed93d40f46cc2749"
+                "email": "test@gmail.com"
               }
             }
           }
@@ -39175,6 +39827,100 @@
           },
           "5XX": {
             "$ref": "#/components/responses/AuthenticationInternalServerError"
+          }
+        }
+      }
+    },
+    "/service/application/user/authentication/v1.0/otp/forgot/email/verify": {
+      "post": {
+        "summary": "verifyEmailForgotOTP | Verify Forgot OTP on email",
+        "description": "Use this API to verify the Forgot OTP received on an email ID.",
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailForgotOtpRequestSchema"
+              },
+              "examples": {
+                "verify forgot otp on email success": {
+                  "value": {
+                    "otp": "2313",
+                    "email": "test@gmail.com"
+                  }
+                },
+                "verify forgot otp on email failure": {
+                  "value": {
+                    "otp": "",
+                    "email": "test@gmail.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "platform",
+            "in": "query",
+            "description": "ID of the application",
+            "schema": {
+              "type": "string",
+              "default": "Fynd"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a JSON object as shown below. Refer `VerifyForgotOtpSuccess` for more details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyForgotOtpSuccess"
+                },
+                "examples": {
+                  "verify forgot otp on email success": {
+                    "$ref": "#/components/examples/VerifyForgotOTP"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Bad request. See the error object in the response body for specific reason",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "verify forgot otp on email failure": {
+                    "value": {
+                      "message": "Invalid request params"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIError"
+                },
+                "examples": {
+                  "verify forgot otp on email failure": {
+                    "value": {
+                      "message": "Exception"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -42522,6 +43268,23 @@
           }
         }
       },
+      "ProductDepartment": {
+        "type": "object",
+        "properties": {
+          "uid": {
+            "type": "integer"
+          },
+          "logo": {
+            "$ref": "#/components/schemas/Media"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "ProductCategoryMap": {
         "type": "object",
         "properties": {
@@ -42833,6 +43596,9 @@
           },
           "brand": {
             "$ref": "#/components/schemas/ProductBrand"
+          },
+          "department": {
+            "$ref": "#/components/schemas/ProductDepartment"
           },
           "teaser_tag": {
             "type": "string"
@@ -48758,20 +49524,6 @@
           }
         }
       },
-      "FailedResponse": {
-        "type": "object",
-        "required": [
-          "message"
-        ],
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        },
-        "example": {
-          "message": "Error Message"
-        }
-      },
       "CDN": {
         "type": "object",
         "required": [
@@ -48885,6 +49637,15 @@
           }
         }
       },
+      "Params": {
+        "type": "object",
+        "properties": {
+          "subpath": {
+            "type": "string",
+            "description": "The subpath for the file."
+          }
+        }
+      },
       "StartRequest": {
         "type": "object",
         "required": [
@@ -48909,21 +49670,16 @@
             }
           },
           "params": {
-            "type": "object"
+            "$ref": "#/components/schemas/Params"
           }
-        },
-        "example": {
-          "file_name": "shirt.png",
-          "size": 12,
-          "content_type": "image/png",
-          "namespace": {
-            "value": "products-item-images",
-            "summary": "Segregation of different types of files(products, orders, logistics etc)"
-          },
-          "tags": [
-            "clothing",
-            "men"
-          ]
+        }
+      },
+      "CreatedBy": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          }
         }
       },
       "CompleteResponse": {
@@ -48984,6 +49740,9 @@
           },
           "modified_on": {
             "type": "string"
+          },
+          "created_by": {
+            "$ref": "#/components/schemas/CreatedBy"
           }
         },
         "example": {
@@ -57302,6 +58061,24 @@
           }
         }
       },
+      "SendEmailForgotOtpRequestSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "send",
+              "resend"
+            ]
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
       "VerifyEmailOtpRequestSchema": {
         "type": "object",
         "properties": {
@@ -57319,6 +58096,17 @@
           }
         }
       },
+      "VerifyEmailForgotOtpRequestSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "otp": {
+            "type": "string"
+          }
+        }
+      },
       "VerifyOtpRequestSchema": {
         "type": "object",
         "properties": {
@@ -57326,6 +58114,17 @@
             "type": "string"
           },
           "register_token": {
+            "type": "string"
+          },
+          "otp": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyMobileForgotOtpRequestSchema": {
+        "type": "object",
+        "properties": {
+          "request_id": {
             "type": "string"
           },
           "otp": {
@@ -57359,6 +58158,30 @@
             "type": "string"
           },
           "captcha_code": {
+            "type": "string"
+          }
+        }
+      },
+      "SendMobileForgotOtpRequestSchema": {
+        "type": "object",
+        "properties": {
+          "mobile": {
+            "type": "string"
+          },
+          "country_code": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "send",
+              "resend"
+            ]
+          },
+          "token": {
+            "type": "string"
+          },
+          "android_hash": {
             "type": "string"
           }
         }
@@ -57641,6 +58464,14 @@
           }
         }
       },
+      "ResetForgotPasswordSuccess": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
       "VerifyOtpSuccess": {
         "type": "object",
         "properties": {
@@ -57651,6 +58482,17 @@
             "type": "boolean"
           },
           "register_token": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyForgotOtpSuccess": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "forgot_token": {
             "type": "string"
           }
         }
@@ -57838,6 +58680,27 @@
         "properties": {
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "APIError": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "info": {
+            "type": "string",
+            "description": "Error code description link"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
           }
         }
       },
@@ -61936,6 +62799,11 @@
           }
         }
       },
+      "ResetForgotPassword": {
+        "value": {
+          "success": true
+        }
+      },
       "VerifyMobileOTP": {
         "value": {
           "verify_mobile_link": true,
@@ -62036,6 +62904,12 @@
             "created_at": "2020-03-11T09:28:41.982Z",
             "updated_at": "2021-02-04T10:10:44.981Z"
           }
+        }
+      },
+      "VerifyForgotOTP": {
+        "value": {
+          "success": true,
+          "forgot_token": "d6c9df22-7e65-41be-9852-8207a8d2d54d"
         }
       }
     }
