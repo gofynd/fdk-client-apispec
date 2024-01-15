@@ -1,11 +1,74 @@
 {
   "info": {
     "title": "Fynd Platform's Public Side APIs",
-    "version": "1.3.9",
+    "version": "1.4.0",
     "description": "Fynd Platform's Public Side APIs"
   },
   "openapi": "3.0.2",
   "paths": {
+    "/service/public/billing/v1.0/plan/detailed-list": {
+      "get": {
+        "summary": "getStandardPlans | Get Standard/Public Plans",
+        "description": "Get Standard/Public Plans.\n",
+        "x-accessScopes": [
+          "company/finance/read"
+        ],
+        "tags": [
+          "Billing"
+        ],
+        "parameters": [
+          {
+            "name": "platform_type",
+            "in": "query",
+            "description": "The type of platform for which plans are requested.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "app/web/both"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetailList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                },
+                "example": {
+                  "message": "Reason is required"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalServerError"
+                },
+                "example": {
+                  "message": "Opps something went wrong !!",
+                  "code": "INTERNAL_SERVER_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/common/configuration/v1.0/application/search-application": {
       "get": {
         "description": "Provide application name or domain url",
@@ -178,6 +241,57 @@
             }
           }
         }
+      }
+    },
+    "/service/public/content/credentials/{entity}": {
+      "get": {
+        "description": "Get credentials for support system",
+        "summary": "getCredentialsByEntity | Get credentials to power chat support systems",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entity",
+            "description": "Server Type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Refer `CredentialsSchema` for more details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CredentialsSchema"
+                },
+                "examples": {
+                  "default": {
+                    "$ref": "#/components/examples/CredentialsExample"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentAPIError"
+                },
+                "examples": {
+                  "default": {
+                    "$ref": "#/components/examples/4XXAPIError"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Content"
+        ]
       }
     },
     "/service/common/inventory/v1.0/company/email/jobCode": {
@@ -670,6 +784,9 @@
       "get": {
         "description": "Get All Webhook Events",
         "summary": "fetchAllWebhookEvents | Get All Webhook Events",
+        "x-accessScopes": [
+          "webhook/events"
+        ],
         "tags": [
           "Webhook"
         ],
@@ -680,6 +797,26 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EventConfigResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "event_configs": [
+                        {
+                          "id": 1,
+                          "event_name": "article",
+                          "event_type": "create",
+                          "event_category": "application",
+                          "version": "1",
+                          "display_name": "article",
+                          "description": "This event gets triggered when an article is created",
+                          "event_schema": null,
+                          "created_on": "2021-12-20T17:38:22.922Z",
+                          "updated_on": "2023-07-26T12:30:30.930Z"
+                        }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -691,6 +828,9 @@
       "post": {
         "description": "Get Webhook Event Details for provided events",
         "summary": "queryWebhookEventDetails | Send webhook event name, type, version, category in request body to get complete details of event from server",
+        "x-accessScopes": [
+          "webhook/events"
+        ],
         "tags": [
           "Webhook"
         ],
@@ -701,6 +841,18 @@
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/EventConfigBase"
+                }
+              },
+              "examples": {
+                "success": {
+                  "value": [
+                    {
+                      "event_name": "article",
+                      "event_type": "update",
+                      "event_category": "company",
+                      "version": "1"
+                    }
+                  ]
                 }
               }
             }
@@ -713,6 +865,254 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/EventConfigResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "event_configs": [
+                        {
+                          "id": 1,
+                          "event_name": "article",
+                          "event_type": "create",
+                          "event_category": "application",
+                          "version": "1",
+                          "display_name": "article",
+                          "description": "This event gets triggered when an article is created",
+                          "event_schema": null,
+                          "created_on": "2021-12-20T17:38:22.922Z",
+                          "updated_on": "2023-07-26T12:30:30.930Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/common/webhook/v1.0/events/depricated-event-notifier": {
+      "get": {
+        "description": "Notifies all the events that are subscribed and are going to deprecate or new version is available for those events",
+        "summary": "notifyDepricatedEvent | Notifies all the events that are going to depricate",
+        "x-accessScopes": [
+          "webhook/events"
+        ],
+        "tags": [
+          "Webhook"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventNotifier"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "event_configs": [
+                        {
+                          "id": 1,
+                          "event_name": "article",
+                          "event_type": "create",
+                          "event_category": "application",
+                          "version": "1",
+                          "display_name": "article",
+                          "description": "This event gets triggered when an article is created",
+                          "event_schema": null,
+                          "created_on": "2021-12-20T17:38:22.922Z",
+                          "updated_on": "2023-07-26T12:30:30.930Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/common/webhook/v1.0/events/transform-event": {
+      "post": {
+        "description": "Test transformation of handler",
+        "summary": "testHandlerTransformation | Test transformation of handler",
+        "x-accessScopes": [
+          "webhook/events"
+        ],
+        "tags": [
+          "Webhook"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformEventRequest"
+              },
+              "examples": {
+                "success": {
+                  "value": {
+                    "event_name": "location",
+                    "event_type": "create",
+                    "event_category": "company",
+                    "event_version": "1",
+                    "event": {
+                      "payload": {
+                        "location": {
+                          "_id": "653720d892a8429b6fb9563e",
+                          "created_on": "2023-10-24T01:41:44.450008",
+                          "modified_on": "2023-10-24T01:41:44.450015"
+                        }
+                      },
+                      "meta": {
+                        "event": {
+                          "type": "create",
+                          "name": "location",
+                          "version": "1"
+                        },
+                        "company_id": 6086,
+                        "service": {
+                          "name": "WheelJack"
+                        },
+                        "trace_id": [
+                          "WheelJack.7cfeea2e-720e-11ee-8f26-ca3fc26a3fda"
+                        ],
+                        "created_timestamp": 1698111704725
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformEventResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "event_trace_id": [
+                        "WheelJack.7cfeea2e-720e-11ee-8f26-ca3fc26a3fda"
+                      ],
+                      "data": {
+                        "event": {
+                          "trace_id": [
+                            "WheelJack.7cfeea2e-720e-11ee-8f26-ca3fc26a3fda"
+                          ],
+                          "name": "location",
+                          "type": "create",
+                          "version": "1",
+                          "created_timestamp": 1698111704725
+                        },
+                        "company_id": 6086,
+                        "contains": [
+                          "location"
+                        ],
+                        "payload": {
+                          "location": {
+                            "_id": "653720d892a8429b6fb9563e",
+                            "created_on": "2023-10-24T01:41:44.450008",
+                            "modified_on": "2023-10-24T01:41:44.450015"
+                          }
+                        }
+                      },
+                      "event_name": "location",
+                      "version": "1",
+                      "status": false,
+                      "event_type": "create",
+                      "service_meta": {
+                        "name": "WheelJack"
+                      },
+                      "association": {
+                        "company_id": 6086
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/common/webhook/v1.0/events/validate-event-schema": {
+      "post": {
+        "description": "Validate Schema for an event",
+        "summary": "validateSchema | Validate Schema for an event",
+        "x-accessScopes": [
+          "webhook/events"
+        ],
+        "tags": [
+          "Webhook"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateSchemaRequest"
+              },
+              "examples": {
+                "success": {
+                  "value": {
+                    "event_name": "location",
+                    "event_type": "create",
+                    "event_category": "company",
+                    "event_version": "1",
+                    "event": {
+                      "payload": {
+                        "location": {
+                          "_id": "653720d892a8429b6fb9563e",
+                          "created_on": "2023-10-24T01:41:44.450008",
+                          "modified_on": "2023-10-24T01:41:44.450015"
+                        }
+                      },
+                      "meta": {
+                        "event": {
+                          "type": "create",
+                          "name": "location",
+                          "version": "1"
+                        },
+                        "company_id": 6086,
+                        "service": {
+                          "name": "WheelJack"
+                        },
+                        "trace_id": [
+                          "WheelJack.7cfeea2e-720e-11ee-8f26-ca3fc26a3fda"
+                        ],
+                        "created_timestamp": 1698111704725
+                      }
+                    },
+                    "event_schema": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidateSchemaResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "status": true,
+                      "message": "Valid schema for this event"
+                    }
+                  }
                 }
               }
             }
@@ -723,6 +1123,140 @@
   },
   "components": {
     "schemas": {
+      "InternalServerError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "description": "Internal server Server error",
+            "type": "string"
+          },
+          "code": {
+            "description": "Error code",
+            "type": "string"
+          }
+        }
+      },
+      "PlanRecurring": {
+        "type": "object",
+        "properties": {
+          "interval": {
+            "type": "string",
+            "example": "month"
+          },
+          "interval_count": {
+            "type": "number",
+            "example": 3
+          }
+        }
+      },
+      "Plan": {
+        "type": "object",
+        "properties": {
+          "recurring": {
+            "$ref": "#/components/schemas/PlanRecurring"
+          },
+          "is_trial_plan": {
+            "type": "boolean",
+            "example": true
+          },
+          "plan_group": {
+            "type": "string",
+            "example": "default"
+          },
+          "tag_lines": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "This is 2020won trial plan"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "example": "INR"
+          },
+          "is_active": {
+            "type": "boolean",
+            "example": true
+          },
+          "is_visible": {
+            "type": "boolean",
+            "example": false
+          },
+          "trial_period": {
+            "type": "number",
+            "example": 30
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "type": {
+            "type": "string",
+            "example": "public"
+          },
+          "country": {
+            "type": "string",
+            "example": "IN"
+          },
+          "_id": {
+            "type": "string",
+            "example": "5f0dcd866173cb003706098f"
+          },
+          "name": {
+            "type": "string",
+            "example": "30 day Trial"
+          },
+          "description": {
+            "type": "string",
+            "example": "30 day Trial"
+          },
+          "amount": {
+            "type": "number",
+            "example": 0
+          },
+          "product_suite_id": {
+            "type": "string",
+            "example": "5f0dcd866173cb0037060975"
+          },
+          "created_at": {
+            "type": "string",
+            "example": "2020-07-14T15:21:42.959Z"
+          },
+          "modified_at": {
+            "type": "string",
+            "example": "2020-07-14T15:21:42.959Z"
+          }
+        }
+      },
+      "DetailList": {
+        "type": "object",
+        "properties": {
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Plan"
+            }
+          },
+          "trial_plan": {
+            "$ref": "#/components/schemas/Plan"
+          },
+          "component_groups": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "Key Features"
+            }
+          }
+        }
+      },
       "ApplicationResponse": {
         "type": "object",
         "properties": {
@@ -1073,6 +1607,63 @@
             "items": {
               "$ref": "#/components/schemas/LocationCountry"
             }
+          }
+        }
+      },
+      "CredentialSchema": {
+        "type": "object",
+        "properties": {
+          "configuration": {
+            "type": "object"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "is_enable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CredentialsSchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CredentialSchema"
+            }
+          }
+        }
+      },
+      "ContentAPIError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "status": {
+            "type": "number"
+          },
+          "code": {
+            "type": "string"
+          },
+          "exception": {
+            "type": "string"
+          },
+          "info": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "stack_trace": {
+            "type": "string"
+          },
+          "meta": {
+            "type": "object"
           }
         }
       },
@@ -2355,10 +2946,10 @@
         }
       },
       "EventConfig": {
+        "type": "object",
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           },
           "event_name": {
             "type": "string"
@@ -2369,6 +2960,11 @@
           "event_category": {
             "type": "string"
           },
+          "event_schema": {
+            "nullable": true,
+            "type": "object",
+            "additionalProperties": true
+          },
           "version": {
             "type": "string"
           },
@@ -2376,9 +2972,13 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "created_on": {
+            "type": "string"
+          },
+          "updated_on": {
             "type": "string"
           }
         }
@@ -2409,9 +3009,208 @@
             "type": "string"
           }
         }
+      },
+      "EventNotifier": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "emails": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "EventSchema": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "meta": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "InternalTransformEvent": {
+        "type": "object",
+        "properties": {
+          "trace_id": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "created_timestamp": {
+            "type": "number"
+          }
+        }
+      },
+      "TransformEventData": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/InternalTransformEvent"
+          },
+          "company_id": {
+            "type": "number"
+          },
+          "contains": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "TransformEventServiceMeta": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "TransformEventAssociation": {
+        "type": "object",
+        "properties": {
+          "company_id": {
+            "type": "number"
+          }
+        }
+      },
+      "TransformEventRequest": {
+        "type": "object",
+        "properties": {
+          "event_name": {
+            "type": "string"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "event_category": {
+            "type": "string"
+          },
+          "event_version": {
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventSchema"
+          }
+        }
+      },
+      "ValidateSchemaRequest": {
+        "type": "object",
+        "properties": {
+          "event_name": {
+            "type": "string"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "event_category": {
+            "type": "string"
+          },
+          "event_version": {
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventSchema"
+          },
+          "event_schema": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "ValidateSchemaResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "TransformEventResponse": {
+        "type": "object",
+        "properties": {
+          "event_trace_id": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "data": {
+            "$ref": "#/components/schemas/TransformEventData"
+          },
+          "event_name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "status": {
+            "type": "boolean"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "service_meta": {
+            "$ref": "#/components/schemas/TransformEventServiceMeta"
+          },
+          "association": {
+            "$ref": "#/components/schemas/TransformEventAssociation"
+          }
+        }
       }
     },
     "responses": {},
-    "examples": {}
+    "examples": {
+      "CredentialsExample": {
+        "value": {
+          "entity_type": "partner",
+          "type": "freshchat",
+          "is_enable": true,
+          "configuration": {
+            "token": "a3e4gf20b-d11g-4512-n3zq-03b9aa7e1yxz",
+            "siteId": "a3e8f20b-d97f-452f-bd72-03b9aa7e1bf0",
+            "host": "https://wchat.freshchat.com"
+          }
+        }
+      },
+      "4XXAPIError": {
+        "value": {
+          "message": "Oops! Something went wrong. Please try later",
+          "status": 400,
+          "code": "CX-1003",
+          "exception": "",
+          "info": "",
+          "request_id": "",
+          "stack_trace": "",
+          "meta": {}
+        }
+      }
+    }
   }
 }
