@@ -1,11 +1,161 @@
 {
   "info": {
     "title": "Fynd Platform's Public Side APIs v2.0.0",
-    "version": "1.5.1",
+    "version": "1.5.2",
     "description": "Fynd Platform's Public Side APIs"
   },
   "openapi": "3.0.2",
   "paths": {
+    "/service/public/catalog/v1.0/taxonomy/level/{level}": {
+      "get": {
+        "description": "Get Taxonomy Details for a given level",
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "getTaxonomyByLevel | Get Taxonomy Information by Level",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "level",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ]
+            },
+            "description": "The level of taxonomy hierarchy to fetch: 0: Fetch departments. 1: Fetch L1 categories. 2: Fetch L2 categories. 3: Fetch L3 categories."
+          },
+          {
+            "in": "query",
+            "name": "l0_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 0 (Department) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "l1_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 1 (L1 Category) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "l2_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 2 (L2 Category) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "l3_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 3 (L3 Category) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Applied limit on the number of items to be returned. Default is 5000."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with taxonomy details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyResponseSchema"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "items": [
+                        {
+                          "uid": 200,
+                          "name": "Industrial Supplies",
+                          "slug": "industrial-supplies",
+                          "level": 0
+                        },
+                        {
+                          "uid": 300,
+                          "name": "Electronics",
+                          "slug": "electronics",
+                          "level": 0
+                        }
+                      ]
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "items": [
+                        {
+                          "uid": 100,
+                          "name": "Toys & Games Deals",
+                          "slug": "toys-games-deals",
+                          "level": 3,
+                          "attributes": [
+                            {
+                              "id": "64fef35f8d16de7d19726108",
+                              "name": "Collection Link",
+                              "slug": "collection-link"
+                            },
+                            {
+                              "id": "64fef2fb8d16de7d19726106",
+                              "name": "Coupon Expiry Date",
+                              "slug": "coupon-expiry-date"
+                            },
+                            {
+                              "id": "651d1d959fed4d229f7632ec",
+                              "name": "Offer Type",
+                              "slug": "offer-type"
+                            }
+                          ],
+                          "product_template_slug": "games-template",
+                          "product_template_name": "Games Template"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "field": "level",
+                      "message": "Not a valid integer."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrors"
+                }
+              }
+            },
+            "description": "Bad request. See the error object in the response body for specific reason"
+          }
+        },
+        "x-groups": [
+          "Taxonomy"
+        ]
+      }
+    },
     "/service/common/configuration/v1.0/application/search-application": {
       "get": {
         "description": "Provide application name or domain url.",
@@ -1083,6 +1233,142 @@
   },
   "components": {
     "schemas": {
+      "TaxonomyItemAttributeSchemaObject": {
+        "type": "object",
+        "description": "A schema definition detailing the type and any constraints on the attribute.",
+        "properties": {
+          "type": {
+            "description": "The data type of the attribute\".",
+            "type": "string",
+            "enum": [
+              "str",
+              "int",
+              "bool",
+              "float"
+            ],
+            "example": "str"
+          },
+          "mandatory": {
+            "type": "boolean",
+            "description": "Specifies if the attribute is mandatory.",
+            "example": false
+          }
+        }
+      },
+      "TaxonomyItemAttributesResponseSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the attribute.",
+            "example": "6718edb99b195a907a7495ae"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the attribute, such as \"Color\" or \"Size\".",
+            "example": "Color"
+          },
+          "slug": {
+            "type": "string",
+            "description": "A URL-friendly identifier for the attribute, which is used for filtering or querying.",
+            "example": "color"
+          },
+          "schema": {
+            "$ref": "#/components/schemas/TaxonomyItemAttributeSchemaObject"
+          }
+        }
+      },
+      "TaxonomyItemResponseSchema": {
+        "type": "object",
+        "required": [
+          "uid",
+          "name",
+          "slug",
+          "level"
+        ],
+        "properties": {
+          "uid": {
+            "type": "number",
+            "description": "Unique identifier for the taxonomy item.",
+            "example": 100
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the taxonomy item. For example, it could be the name of a department or category.",
+            "example": "Electronics"
+          },
+          "slug": {
+            "type": "string",
+            "description": "A URL-friendly identifier for the taxonomy item. The slug differs based on the level: - At level 0, it refers to the department. - At level 1, it refers to the L1 category. - At level 2, it refers to the L2 category. - At level 3, it refers to the L3 category.",
+            "example": "electronics"
+          },
+          "level": {
+            "type": "integer",
+            "description": "The level level of the taxonomy item in the hierarchy: - 0: Department - 1: L1 category - 2: L2 category - 3: L3 category",
+            "example": 1
+          },
+          "attributes": {
+            "type": "array",
+            "description": "A list of attributes associated with the taxonomy item, such as color or size. These attributes may differ depending on the level of the taxonomy.",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyItemAttributesResponseSchema"
+            }
+          },
+          "product_template_slug": {
+            "type": "string",
+            "description": "A slug identifier for the template associated with this taxonomy item. It links the taxonomy to a specific product template.",
+            "example": "casual-template"
+          },
+          "product_template_name": {
+            "type": "string",
+            "description": "A Name for the template associated with this taxonomy item. It links the taxonomy to a specific product template.",
+            "example": "Casual Template"
+          }
+        }
+      },
+      "TaxonomyResponseSchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of taxonomy items for the requested level level. Each item represents a taxonomy node with details about its category, attributes, and associated template.",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyItemResponseSchema"
+            }
+          }
+        }
+      },
+      "ValidationErrors": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A brief description of the error encountered."
+          },
+          "field": {
+            "type": "string",
+            "description": "The field in the request that caused the error."
+          }
+        },
+        "required": [
+          "message",
+          "field"
+        ]
+      },
       "ApplicationResponseSchema": {
         "type": "object",
         "properties": {
