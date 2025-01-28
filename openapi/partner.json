@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Partner Side APIs v2.1.0",
-    "version": "1.6.3",
+    "title": "Fynd Platform's Partner Side APIs v2.1.1",
+    "version": "1.6.4",
     "description": "Fynd Platform's Partner Side APIs"
   },
   "openapi": "3.0.2",
@@ -12836,6 +12836,21 @@
             "type": "integer",
             "description": "The identifier for the subscriber involved in the mapping."
           },
+          "filters": {
+            "$ref": "#/components/schemas/FilterSchema"
+          },
+          "reducer": {
+            "nullable": true,
+            "type": "object",
+            "description": "The reducer property allows users to customize the JSON structure of the webhook payload using JSONPath queries. They can also create new properties by mapping existing ones. Note that it overrides the entire JSON structure of the webhook payload sent via the webhook. See the partner documentation's filter and reducer section for details.",
+            "additionalProperties": true,
+            "example": {
+              "article": {
+                "title": "$.payload.articles[0].title",
+                "author": "$.payload.articles[0].author"
+              }
+            }
+          },
           "broadcaster_config": {
             "$ref": "#/components/schemas/BroadcasterConfig"
           },
@@ -12843,6 +12858,60 @@
             "type": "string",
             "format": "date-time",
             "description": "The timestamp indicating when the subscriber event mapping was created."
+          }
+        }
+      },
+      "FilterSchema": {
+        "type": "object",
+        "nullable": true,
+        "additionalProperties": false,
+        "description": "The filter property allows users to set up webhook filtering for a particular event by specifying a JSONPath query to extract a value from the payload and a condition to evaluate it. If the condition fails, the webhook is not sent. See the partner documentation's filter and reducer section for details. It can be used in below 2 modes: 1. Single condition mode: Includes `query` and `condition` to filter based on a JSONPath query and a JavaScript condition. 2. Logical group mode: Includes `logic` and an array of `conditions`, where each condition is itself a filter object. Note: Ensure that only one of these modes is used at a time.\n",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "JSONPath expression that specifies the property in the webhook payload to filter on. This enables targeting specific data within the payload.",
+            "example": "$.payload.articles[*].id"
+          },
+          "condition": {
+            "type": "string",
+            "description": "JavaScript function used to evaluate the specified property in the webhook payload against a condition. This function determines whether the filter passes based on its return value.",
+            "example": "(id) => id > 2"
+          },
+          "logic": {
+            "type": "string",
+            "enum": [
+              "and",
+              "or"
+            ],
+            "description": "Logical operator used to combine multiple conditions in the `conditions` array. Supported values are `AND` and `OR`.",
+            "example": "and"
+          },
+          "conditions": {
+            "type": "array",
+            "description": "An array of filter objects to be evaluated using the specified logical operator. This array will contain more filters including a combination of single condition mode and logical group mode filters.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "examples": {
+          "single_condition": {
+            "query": "$.payload.articles[*].id",
+            "condition": "(id) => id > 2"
+          },
+          "logical_group": {
+            "logic": "and",
+            "conditions": [
+              {
+                "query": "$.payload.articles[*].id",
+                "condition": "(id) => id > 2"
+              },
+              {
+                "query": "$.payload.user.active",
+                "condition": "(active) => active === true"
+              }
+            ]
           }
         }
       },
