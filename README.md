@@ -14,7 +14,7 @@ Welcome to the FDK API Specifications repository. Here you will find resources t
 
 * **API Documentation:**  
   Explore and play around with the FDK API directly from our interactive documentation. The documentation allows you to test API requests, review available endpoints, and understand the data flow.  
-  [View API Documentation](https://docs.fynd.com/partners)
+  [View API Documentation](https://partners.fynd.com/help)
 
 ## How to Use
 
@@ -27,7 +27,7 @@ Welcome to the FDK API Specifications repository. Here you will find resources t
    - Alternatively, you can review the specification to understand how to interact with the API programmatically.
 
 3. **API Documentation:**  
-   - Visit our [API Documentation](https://docs.fynd.com/partners) to test the endpoints in a browser-based environment.  
+   - Visit our [API Documentation](https://partners.fynd.com/help) to test the endpoints in a browser-based environment.  
    - Use interactive tools to experiment with different API requests and responses.
 
 ---
