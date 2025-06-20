@@ -1,15 +1,165 @@
 {
   "info": {
-    "title": "Fynd Platform's Public Side APIs v1.10.3",
-    "version": "1.10.3-2",
+    "title": "Fynd Platform's Public Side APIs v2.7.1",
+    "version": "3.4.1",
     "description": "Fynd Platform's Public Side APIs"
   },
   "openapi": "3.0.2",
   "paths": {
-    "/service/public/configuration/v1.0/application/search-application": {
+    "/service/public/catalog/v1.0/taxonomy/level/{level}": {
+      "get": {
+        "description": "Get Taxonomy Details for a given level",
+        "tags": [
+          "Catalog"
+        ],
+        "summary": "getTaxonomyByLevel | Get Taxonomy Information by Level",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "level",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "enum": [
+                0,
+                1,
+                2,
+                3
+              ]
+            },
+            "description": "The level of taxonomy hierarchy to fetch: 0: Fetch departments. 1: Fetch L1 categories. 2: Fetch L2 categories. 3: Fetch L3 categories."
+          },
+          {
+            "in": "query",
+            "name": "l0_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 0 (Department) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "l1_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 1 (L1 Category) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "l2_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 2 (L2 Category) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "l3_slug",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Level 3 (L3 Category) slug of the taxonomy to filter results. "
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "number"
+            },
+            "description": "Applied limit on the number of items to be returned. Default is 5000."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with taxonomy details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyResponseSchema"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "items": [
+                        {
+                          "uid": 200,
+                          "name": "Industrial Supplies",
+                          "slug": "industrial-supplies",
+                          "level": 0
+                        },
+                        {
+                          "uid": 300,
+                          "name": "Electronics",
+                          "slug": "electronics",
+                          "level": 0
+                        }
+                      ]
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "items": [
+                        {
+                          "uid": 100,
+                          "name": "Toys & Games Deals",
+                          "slug": "toys-games-deals",
+                          "level": 3,
+                          "attributes": [
+                            {
+                              "id": "64fef35f8d16de7d19726108",
+                              "name": "Collection Link",
+                              "slug": "collection-link"
+                            },
+                            {
+                              "id": "64fef2fb8d16de7d19726106",
+                              "name": "Coupon Expiry Date",
+                              "slug": "coupon-expiry-date"
+                            },
+                            {
+                              "id": "651d1d959fed4d229f7632ec",
+                              "name": "Offer Type",
+                              "slug": "offer-type"
+                            }
+                          ],
+                          "product_template_slug": "games-template",
+                          "product_template_name": "Games Template"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "errors": [
+                    {
+                      "field": "level",
+                      "message": "Not a valid integer."
+                    }
+                  ]
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrors"
+                }
+              }
+            },
+            "description": "Bad request. See the error object in the response body for specific reason"
+          }
+        },
+        "x-groups": [
+          "Taxonomy"
+        ]
+      }
+    },
+    "/service/common/configuration/v1.0/application/search-application": {
       "get": {
         "description": "Provide application name or domain url.",
-        "summary": "searchApplication | Search application.",
+        "summary": "searchApplication | Search application",
         "x-documentation": false,
         "parameters": [
           {
@@ -17,11 +167,6 @@
             "name": "authorization",
             "schema": {
               "type": "string"
-            },
-            "examples": {
-              "200": {
-                "value": "Basic c2xpbmdzaG90YXBwdG9rZW46c2xpbmdzaDB0QHBwdDBrZW4jZnluZA=="
-              }
             }
           },
           {
@@ -30,16 +175,8 @@
             "schema": {
               "type": "string"
             },
-            "description": "Provide application name",
-            "examples": {
-              "200": {
-                "value": "demo"
-              }
-            }
+            "description": "Provide application name"
           }
-        ],
-        "tags": [
-          "Configuration"
         ],
         "responses": {
           "200": {
@@ -47,72 +184,98 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ApplicationResponse"
+                  "$ref": "#/components/schemas/ApplicationResponseSchema"
                 },
-                "examples": {
-                  "200": {
-                    "value": {
-                      "application": {
-                        "website": {
-                          "enabled": true,
-                          "basepath": "/"
-                        },
-                        "cors": {
-                          "domains": []
-                        },
-                        "auth": {
-                          "enabled": true
-                        },
-                        "description": "test",
-                        "channel_type": "store",
-                        "cache_ttl": -1,
-                        "internal": false,
-                        "is_active": true,
-                        "mode": "live",
-                        "_id": "620b931ee7bfb11f910bf4a3",
-                        "company_id": 2,
-                        "name": "test",
-                        "owner": "5b9b98150df588546aaea6d2",
-                        "logo": {
-                          "secure_url": "https://hdn-1.addsale.com/x0/company/164/applications/5efc9913f474c329718e3690/application/pictures/free-logo/original/olqHM8LNr-JioMart-Groceries.png"
-                        },
-                        "favicon": {
-                          "secure_url": "https://hdn-1.addsale.com/x0/company/164/applications/5efc9913f474c329718e3690/application/pictures/free-logo/original/olqHM8LNr-JioMart-Groceries.png"
-                        },
-                        "banner": {
-                          "secure_url": "https://hdn-1.addsale.com/x0/company/164/applications/5efc9913f474c329718e3690/application/pictures/landscape-banner/original/D2fr98CUH-JioMart-Groceries.png"
-                        },
+                "example": {
+                  "application": {
+                    "website": {
+                      "enabled": true,
+                      "basepath": "/"
+                    },
+                    "cors": {
+                      "domains": []
+                    },
+                    "auth": {
+                      "enabled": true
+                    },
+                    "description": "test",
+                    "channel_type": "store",
+                    "cache_ttl": -1,
+                    "internal": false,
+                    "is_active": true,
+                    "mode": "live",
+                    "_id": "620b931ee7bfb11f910bf4a3",
+                    "company_id": 2,
+                    "name": "test",
+                    "owner": "5b9b98150df588546aaea6d2",
+                    "logo": {
+                      "secure_url": "https://hdn-1.addsale.com/x0/company/164/applications/5efc9913f474c329718e3690/application/pictures/free-logo/original/olqHM8LNr-JioMart-Groceries.png"
+                    },
+                    "favicon": {
+                      "secure_url": "https://hdn-1.addsale.com/x0/company/164/applications/5efc9913f474c329718e3690/application/pictures/free-logo/original/olqHM8LNr-JioMart-Groceries.png"
+                    },
+                    "banner": {
+                      "secure_url": "https://hdn-1.addsale.com/x0/company/164/applications/5efc9913f474c329718e3690/application/pictures/landscape-banner/original/D2fr98CUH-JioMart-Groceries.png"
+                    },
+                    "token": "tPQv0nc23",
+                    "tokens": [
+                      {
                         "token": "tPQv0nc23",
-                        "tokens": [
-                          {
-                            "token": "tPQv0nc23",
-                            "created_at": "2022-02-15T11:48:46.909Z"
-                          }
-                        ],
-                        "domains": [
-                          {
-                            "verified": true,
-                            "is_primary": true,
-                            "is_shortlink": true,
-                            "_id": "620b931ee7bfb11f910bf4a4",
-                            "name": "qckvv5lhp.hostfynd.dev"
-                          }
-                        ],
-                        "redirections": [],
-                        "meta": [],
-                        "created_at": "2022-02-15T11:48:46.909Z",
-                        "modified_at": "2022-02-15T11:48:46.909Z",
-                        "__v": 0,
-                        "domain": {
-                          "verified": true,
-                          "is_primary": true,
-                          "is_shortlink": true,
-                          "_id": "620b931ee7bfb11f910bf4a4",
-                          "name": "qckvv5lhp.hostfynd.dev"
-                        },
-                        "id": "620b931ee7bfb11f910bf4a3"
+                        "created_at": "2022-02-15T11:48:46.909Z"
                       }
-                    }
+                    ],
+                    "domains": [
+                      {
+                        "verified": true,
+                        "is_primary": true,
+                        "is_shortlink": true,
+                        "_id": "620b931ee7bfb11f910bf4a4",
+                        "name": "qckvv5lhp.hostfynd.dev"
+                      }
+                    ],
+                    "redirections": [],
+                    "meta": [],
+                    "created_at": "2022-02-15T11:48:46.909Z",
+                    "modified_at": "2022-02-15T11:48:46.909Z",
+                    "__v": 0,
+                    "domain": {
+                      "verified": true,
+                      "is_primary": true,
+                      "is_shortlink": true,
+                      "_id": "620b931ee7bfb11f910bf4a4",
+                      "name": "qckvv5lhp.hostfynd.dev"
+                    },
+                    "id": "620b931ee7bfb11f910bf4a3"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadRequestSchema"
+                },
+                "example": {
+                  "value": {
+                    "message": "Invalid application domain or id."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotFound"
+                },
+                "example": {
+                  "value": {
+                    "message": "No application found"
                   }
                 }
               }
@@ -121,10 +284,13 @@
         },
         "x-groups": [
           "Application Information"
+        ],
+        "tags": [
+          "Configuration"
         ]
       }
     },
-    "/service/public/configuration/v1.0/location": {
+    "/service/common/configuration/v1.0/location": {
       "get": {
         "description": "Get Location configuration",
         "tags": [
@@ -144,12 +310,7 @@
                 "city"
               ]
             },
-            "description": "Provide location type to query on. Possible values : country, state, city",
-            "examples": {
-              "200": {
-                "value": "state"
-              }
-            }
+            "description": "Provide location type to query on. Possible values : country, state, city"
           },
           {
             "in": "query",
@@ -157,12 +318,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Field is optional when location_type is country. If querying for state, provide id of country. If querying for city, provide id of state.",
-            "examples": {
-              "success": {
-                "value": ""
-              }
-            }
+            "description": "Field is optional when location_type is country. If querying for state, provide id of country. If querying for city, provide id of state."
           }
         ],
         "responses": {
@@ -172,110 +328,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Locations"
-                },
-                "examples": {
-                  "success": {
-                    "value": {
-                      "items": [
-                        {
-                          "capital": "Kabul",
-                          "currency": "AFN",
-                          "iso2": "AF",
-                          "iso3": "AFG",
-                          "name": "Afghanistan",
-                          "phone_code": "990999092",
-                          "type": "country",
-                          "uid": 1,
-                          "__v": 0,
-                          "_id": "5ec50c613c403900600fcdec,",
-                          "default_currency": {
-                            "name": "Indian Rupee",
-                            "symbol": "₹",
-                            "code": "INR"
-                          },
-                          "default_language": {
-                            "name": "English",
-                            "code": "en-IN"
-                          },
-                          "state_code": "200",
-                          "country_code": "IN",
-                          "latitude": "22.000",
-                          "longitude": "23.00"
-                        }
-                      ]
-                    }
-                  }
                 }
               }
             }
           }
-        },
-        "x-groups": [
-          "Location Information"
-        ]
-      }
-    },
-    "/service/public/configuration/v1.0/version": {
-      "post": {
-        "summary": "checkVersionIsUpToDate | Check application version",
-        "description": "Check if the application version is up to date.",
-        "tags": [
-          "Configuration"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VersionRequest"
-              },
-              "examples": {
-                "success": {
-                  "value": {
-                    "application": {
-                      "name": "fynd_platform_seller_ios",
-                      "version": "0.2.20"
-                    },
-                    "device": {
-                      "os": {
-                        "name": "ios"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VersionResponse"
-                },
-                "examples": {
-                  "success": {
-                    "value": {
-                      "type": "UP_TO_DATE",
-                      "title": "Up To Date",
-                      "description": "The application is up to date",
-                      "update_dialog": {
-                        "type": "INTERVAL",
-                        "interval": 10080
-                      },
-                      "is_app_blocked": false
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "x-groups": [
-          "Application Information"
-        ]
+        }
       }
     },
     "/service/public/content/basic-details": {
@@ -378,6 +435,35 @@
         },
         "x-groups": [
           "Menu Management"
+        ]
+      }
+    },
+    "/service/public/content/analytics-tags": {
+      "get": {
+        "summary": "getAnalyticsTags | Get Analytics Tags",
+        "description": "Retrieve analytics tags.",
+        "tags": [
+          "Content"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with analytics tags.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsTagsSchema"
+                },
+                "examples": {
+                  "success": {
+                    "$ref": "#/components/examples/AnalyticsTagsExample"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Analytics Tags Management"
         ]
       }
     },
@@ -487,7 +573,13 @@
             "description": "The type of the page (e.g., pricing).",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "home",
+                "features",
+                "pricing",
+                "theme"
+              ]
             },
             "examples": {
               "success": {
@@ -620,7 +712,11 @@
             "description": "Server Type",
             "required": true,
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "partner",
+                "platform"
+              ]
             },
             "examples": {
               "success": {
@@ -644,21 +740,6 @@
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error. See the error object in the response body for the exact reason.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ContentAPIError"
-                },
-                "examples": {
-                  "failure": {
-                    "$ref": "#/components/examples/4XXAPIError"
-                  }
-                }
-              }
-            }
           }
         },
         "x-groups": [
@@ -666,75 +747,177 @@
         ]
       }
     },
-    "/service/public/content/sdk-readme": {
+    "/service/public/content/languages": {
       "get": {
-        "description": "Get documentation of SDK",
-        "summary": "getSDKDocumentation | Get documentation link of Software Development Kit",
+        "description": "Fetches complete list of languages supported by the platform with their locale codes and text directions.",
+        "summary": "getAllLanguages | Get All Languages",
+        "x-documentation": false,
+        "x-groups": [
+          "Languages"
+        ],
         "responses": {
           "200": {
-            "description": "Success. Refer `SDKLinksResponseSchema` for more details.",
+            "description": "A list of supported languages.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SDKLinksResponseSchema"
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Language"
+                      }
+                    }
+                  }
                 },
                 "examples": {
                   "success": {
-                    "$ref": "#/components/examples/SDKLinksResponseExample"
+                    "summary": "Successfully retrieved languages.",
+                    "value": {
+                      "items": [
+                        {
+                          "_id": "1",
+                          "locale": "en",
+                          "direction": "ltr",
+                          "name": "English",
+                          "display_name": "English"
+                        },
+                        {
+                          "_id": "2",
+                          "locale": "ar",
+                          "direction": "rtl",
+                          "name": "Arabic",
+                          "display_name": "Arabic"
+                        }
+                      ]
+                    }
                   }
                 }
               }
             }
           }
         },
-        "x-groups": [
-          "SDK Documentation"
-        ],
         "tags": [
           "Content"
         ]
       }
     },
-    "/service/public/content/sdk-readme/{type}": {
+    "/service/public/content/languages/{locale}": {
       "get": {
-        "description": "Get documentation of SDK by its type",
-        "summary": "getSDKDocumentationByType | Get documentation of Software Development Kit by its type",
+        "description": "Retrieves detailed information about a specific language using its locale identifier.",
+        "summary": "getLanguageByLocale | Get Single Language",
+        "x-documentation": false,
+        "x-groups": [
+          "Languages"
+        ],
         "parameters": [
           {
-            "name": "type",
+            "name": "locale",
             "in": "path",
-            "description": "Type of SDK",
-            "schema": {
-              "type": "string"
-            },
             "required": true,
-            "examples": {
-              "success": {
-                "value": "javascript"
-              }
+            "schema": {
+              "type": "string",
+              "example": "hi-IN"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success. Refer `SDKbyTypeResponseSchema` for more details.",
+            "description": "Details of the requested language.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SDKbyTypeResponseSchema"
+                  "$ref": "#/components/schemas/Language"
                 },
                 "examples": {
                   "success": {
-                    "$ref": "#/components/examples/SDKByTypeResponse"
+                    "summary": "Successfully retrieved language details.",
+                    "value": {
+                      "_id": "1",
+                      "locale": "en",
+                      "direction": "ltr",
+                      "name": "English",
+                      "display_name": "English"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Language not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "failure": {
+                    "summary": "Language not found.",
+                    "value": {
+                      "error": "Language not found."
+                    }
                   }
                 }
               }
             }
           }
         },
+        "tags": [
+          "Content"
+        ]
+      }
+    },
+    "/service/public/content/translatable/resources": {
+      "get": {
+        "description": "Retrieves all resources that can be translated across different languages in the system.",
+        "summary": "getAllTranslatableResources | Get Translatable Items",
+        "x-documentation": false,
         "x-groups": [
-          "SDK Documentation"
+          "Translatable Resources"
         ],
+        "responses": {
+          "200": {
+            "description": "A list of translatable resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TranslatableResource"
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "success": {
+                    "summary": "Successfully retrieved translatable resources.",
+                    "value": {
+                      "items": [
+                        {
+                          "_id": "1",
+                          "type": "company.product",
+                          "name": "Product A",
+                          "description": "Description of Product A",
+                          "meta": {
+                            "created_by": "65dbf9aa8dbb86c55c4d1946",
+                            "updated_by": "65dbf9aa8dbb86c55c4d1946",
+                            "created_at": "2024-01-01T12:00:00Z",
+                            "updated_at": "2024-01-01T12:00:00Z"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "tags": [
           "Content"
         ]
@@ -749,12 +932,16 @@
           {
             "name": "slug",
             "in": "path",
-            "description": "pass the slug of the extension",
+            "description": "Slug of the extension",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "example": "example-extension-1"
+            "examples": {
+              "success": {
+                "value": "example-extension-1"
+              }
+            }
           }
         ],
         "responses": {
@@ -765,100 +952,117 @@
                 "schema": {
                   "$ref": "#/components/schemas/ExtensionUsingSlug"
                 },
-                "example": {
-                  "_id": "633ab5cb635a41fdde9fb648",
-                  "organization_id": "6333fef3b1d85e44e738c138",
-                  "extension_id": "633425ebb1d85e44e738c2ab",
-                  "slug": "example-extension-1",
-                  "scope": [
-                    "company/profile",
-                    "company/saleschannel",
-                    "company/product",
-                    "company/order",
-                    "company/application/customer",
-                    "company/application/analytics",
-                    "company/application/storage",
-                    "company/application/marketing",
-                    "company/application/catalogue",
-                    "company/application/communication",
-                    "company/application/support",
-                    "company/application/order",
-                    "company/application/settings"
-                  ],
-                  "category": {
-                    "categories_l1": [],
-                    "categories_l2": []
-                  },
-                  "listing_info": {
-                    "name": "ujjawal-example-extension-1",
-                    "keywords": [],
-                    "tagline": "test-extension for test how extensions look and work and how to create them",
-                    "icon": "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/AMwIEOw0U-logo.png"
-                  },
-                  "details": {
-                    "benefits": [
-                      {
-                        "title": "Works fast",
-                        "description": "works fast",
-                        "_id": "633ab5cb635a41fdde9fb649"
-                      }
-                    ],
-                    "screenshots": {
-                      "desktop": [
-                        "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/g95yHXkou-1024x576.png",
-                        "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/IKdHxP2fN-1024x576.png",
-                        "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/_auq1yvEp-1024x576.png"
+                "examples": {
+                  "success": {
+                    "value": {
+                      "_id": "633ab5cb635a41fdde9fb648",
+                      "organization_id": "6333fef3b1d85e44e738c138",
+                      "extension_id": "633425ebb1d85e44e738c2ab",
+                      "slug": "example-extension-1",
+                      "scope": [
+                        "company/profile",
+                        "company/saleschannel",
+                        "company/product",
+                        "company/order",
+                        "company/application/customer",
+                        "company/application/analytics",
+                        "company/application/storage",
+                        "company/application/marketing",
+                        "company/application/catalogue",
+                        "company/application/communication",
+                        "company/application/support",
+                        "company/application/order",
+                        "company/application/settings"
                       ],
-                      "mobile": [
-                        "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/E_YAHM9cU-600x900.png",
-                        "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/vEnXw9cCg-600x900.png",
-                        "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/O3Wng4Rqn-600x900.png"
-                      ]
-                    },
-                    "description": "Sample public extension",
-                    "demo_url": "",
-                    "video_url": [
-                      {
-                        "type": "video",
-                        "url": "https://hdn-1.addsale.com/x0/products/videos/item/free/original/kizLVNWyS-video-sc-1.mp4"
-                      }
-                    ],
-                    "integrations": []
-                  },
-                  "plan_type": "free",
-                  "plans": [
-                    {
-                      "name": "Custom Free",
-                      "features": "provides ease",
-                      "type": "free",
-                      "price": {
-                        "amount": 0,
-                        "currency": "INR"
+                      "category": {
+                        "categories_l1": [
+                          {
+                            "slug": "conversion",
+                            "_id": "6369fab97b6f9584fa357c11"
+                          }
+                        ],
+                        "categories_l2": [
+                          {
+                            "slug": "cart-modification",
+                            "_id": "6369fab97b6f9584fa357c8a",
+                            "parent": "6369fab97b6f9584fa357c11"
+                          }
+                        ]
                       },
-                      "trial_days": 0,
-                      "additional_charges": ""
+                      "listing_info": {
+                        "name": "ujjawal-example-extension-1",
+                        "keywords": [],
+                        "tagline": "test-extension for test how extensions look and work and how to create them",
+                        "icon": "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/AMwIEOw0U-logo.png"
+                      },
+                      "details": {
+                        "benefits": [
+                          {
+                            "title": "Works fast",
+                            "description": "works fast",
+                            "_id": "633ab5cb635a41fdde9fb649"
+                          }
+                        ],
+                        "screenshots": {
+                          "desktop": [
+                            "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/g95yHXkou-1024x576.png",
+                            "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/IKdHxP2fN-1024x576.png",
+                            "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/_auq1yvEp-1024x576.png"
+                          ],
+                          "mobile": [
+                            "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/E_YAHM9cU-600x900.png",
+                            "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/vEnXw9cCg-600x900.png",
+                            "https://hdn-1.addsale.com/x0/misc/pictures/free-icon/original/O3Wng4Rqn-600x900.png"
+                          ]
+                        },
+                        "description": "Sample public extension",
+                        "demo_url": "",
+                        "video_url": [
+                          {
+                            "type": "video",
+                            "url": "https://hdn-1.addsale.com/x0/products/videos/item/free/original/kizLVNWyS-video-sc-1.mp4"
+                          }
+                        ],
+                        "integrations": []
+                      },
+                      "plan_type": "free",
+                      "plans": [
+                        {
+                          "name": "Custom Free",
+                          "features": "provides ease",
+                          "type": "free",
+                          "price": {
+                            "amount": 0,
+                            "currency": "INR"
+                          },
+                          "trial_days": 0,
+                          "additional_charges": ""
+                        }
+                      ],
+                      "plans_url": "",
+                      "contact_info": {
+                        "support": {
+                          "email": "test@example.com",
+                          "phone": "8888888888",
+                          "website_url": "",
+                          "faq_url": "",
+                          "privacy_policy_url": "",
+                          "terms_of_service": "",
+                          "country_code": "91"
+                        }
+                      },
+                      "current_status": "active",
+                      "coming_soon": {
+                        "is_coming_soon": false,
+                        "upvote_count": 0
+                      },
+                      "created_at": "2022-10-03T10:13:31.607Z",
+                      "modified_at": "2022-10-03T10:13:31.607Z",
+                      "organization": {
+                        "name": "ujjawal-partners-fashion",
+                        "slug": "ujjawa-w7t-68"
+                      }
                     }
-                  ],
-                  "plans_url": "",
-                  "contact_info": {
-                    "support": {
-                      "email": "ujjawaltaleja@gofynd.com",
-                      "phone": "7988169279",
-                      "website_url": "",
-                      "faq_url": "",
-                      "privacy_policy_url": ""
-                    }
-                  },
-                  "current_status": "active",
-                  "coming_soon": {
-                    "is_coming_soon": false,
-                    "upvote_count": 0
-                  },
-                  "created_at": "2022-10-03T10:13:31.607Z",
-                  "modified_at": "2022-10-03T10:13:31.607Z",
-                  "organization": {
-                    "name": "ujjawal-partners-fashion",
-                    "slug": "ujjawa-w7t-68"
                   }
                 }
               }
@@ -878,9 +1082,6 @@
         "description": "Retrieve a list of all webhook events in the public server setup.",
         "summary": "fetchAllWebhookEvents | Fetch all webhook events.",
         "x-documentation": false,
-        "x-accessScopes": [
-          "webhook/events"
-        ],
         "tags": [
           "Webhook"
         ],
@@ -890,7 +1091,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventConfigResponse"
+                  "$ref": "#/components/schemas/EventDetails"
                 },
                 "examples": {
                   "success": {
@@ -917,7 +1118,7 @@
           }
         },
         "x-groups": [
-          "Webhook event management"
+          "Webhook"
         ]
       }
     },
@@ -926,9 +1127,6 @@
         "description": "Query and obtain detailed information about webhook events in the public server configurations.",
         "summary": "queryWebhookEventDetails | Query webhook event details.",
         "x-documentation": false,
-        "x-accessScopes": [
-          "webhook/events"
-        ],
         "tags": [
           "Webhook"
         ],
@@ -962,7 +1160,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventConfigResponse"
+                  "$ref": "#/components/schemas/EventDetails"
                 },
                 "examples": {
                   "success": {
@@ -989,7 +1187,7 @@
           }
         },
         "x-groups": [
-          "Webhook event management"
+          "Webhook"
         ]
       }
     },
@@ -998,9 +1196,6 @@
         "description": "Notifies all the events that are subscribed and are going to deprecate or new version is available for those events",
         "summary": "notifyDepricatedEvent | Notifies all the events that are going to depricate",
         "x-documentation": false,
-        "x-accessScopes": [
-          "webhook/events"
-        ],
         "tags": [
           "Webhook"
         ],
@@ -1015,19 +1210,9 @@
                 "examples": {
                   "success": {
                     "value": {
-                      "event_configs": [
-                        {
-                          "id": 1,
-                          "event_name": "article",
-                          "event_type": "create",
-                          "event_category": "application",
-                          "version": "1",
-                          "display_name": "article",
-                          "description": "This event gets triggered when an article is created",
-                          "event_schema": null,
-                          "created_on": "2021-12-20T17:38:22.922Z",
-                          "updated_on": "2023-07-26T12:30:30.930Z"
-                        }
+                      "message": "some message",
+                      "emails": [
+                        "test@example.com"
                       ]
                     }
                   }
@@ -1035,7 +1220,10 @@
               }
             }
           }
-        }
+        },
+        "x-groups": [
+          "Webhook"
+        ]
       }
     },
     "/service/common/webhook/v1.0/events/transform-event": {
@@ -1043,9 +1231,6 @@
         "description": "Test transformation of handler",
         "summary": "testHandlerTransformation | Test transformation of handler",
         "x-documentation": false,
-        "x-accessScopes": [
-          "webhook/events"
-        ],
         "tags": [
           "Webhook"
         ],
@@ -1053,7 +1238,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TransformEventRequest"
+                "$ref": "#/components/schemas/TransformEventPayload"
               },
               "examples": {
                 "success": {
@@ -1098,7 +1283,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TransformEventResponse"
+                  "$ref": "#/components/schemas/TransformEventResult"
                 },
                 "examples": {
                   "success": {
@@ -1144,7 +1329,10 @@
               }
             }
           }
-        }
+        },
+        "x-groups": [
+          "Webhook"
+        ]
       }
     },
     "/service/common/webhook/v1.0/events/validate-event-schema": {
@@ -1152,9 +1340,6 @@
         "description": "Validate Schema for an event",
         "summary": "validateSchema | Validate Schema for an event",
         "x-documentation": false,
-        "x-accessScopes": [
-          "webhook/events"
-        ],
         "tags": [
           "Webhook"
         ],
@@ -1162,7 +1347,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ValidateSchemaRequest"
+                "$ref": "#/components/schemas/ValidateSchemaPayload"
               },
               "examples": {
                 "success": {
@@ -1208,7 +1393,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ValidateSchemaResponse"
+                  "$ref": "#/components/schemas/ValidateSchemaResult"
                 },
                 "examples": {
                   "success": {
@@ -1221,13 +1406,153 @@
               }
             }
           }
-        }
+        },
+        "x-groups": [
+          "Webhook"
+        ]
       }
     }
   },
   "components": {
     "schemas": {
-      "ApplicationResponse": {
+      "TaxonomyItemAttributeSchemaObject": {
+        "type": "object",
+        "description": "A schema definition detailing the type and any constraints on the attribute.",
+        "properties": {
+          "type": {
+            "description": "The data type of the attribute\".",
+            "type": "string",
+            "enum": [
+              "str",
+              "int",
+              "bool",
+              "float"
+            ],
+            "example": "str"
+          },
+          "mandatory": {
+            "type": "boolean",
+            "description": "Specifies if the attribute is mandatory.",
+            "example": false
+          }
+        }
+      },
+      "TaxonomyItemAttributesResponseSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the attribute.",
+            "example": "6718edb99b195a907a7495ae"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the attribute, such as \"Color\" or \"Size\".",
+            "example": "Color"
+          },
+          "slug": {
+            "type": "string",
+            "description": "A URL-friendly identifier for the attribute, which is used for filtering or querying.",
+            "example": "color"
+          },
+          "schema": {
+            "$ref": "#/components/schemas/TaxonomyItemAttributeSchemaObject"
+          }
+        }
+      },
+      "TaxonomyItemResponseSchema": {
+        "type": "object",
+        "required": [
+          "uid",
+          "name",
+          "slug",
+          "level"
+        ],
+        "properties": {
+          "uid": {
+            "type": "number",
+            "description": "Unique identifier for the taxonomy item.",
+            "example": 100
+          },
+          "name": {
+            "type": "string",
+            "description": "The name of the taxonomy item. For example, it could be the name of a department or category.",
+            "example": "Electronics"
+          },
+          "slug": {
+            "type": "string",
+            "description": "A URL-friendly identifier for the taxonomy item. The slug differs based on the level: - At level 0, it refers to the department. - At level 1, it refers to the L1 category. - At level 2, it refers to the L2 category. - At level 3, it refers to the L3 category.",
+            "example": "electronics"
+          },
+          "level": {
+            "type": "integer",
+            "description": "The level level of the taxonomy item in the hierarchy: - 0: Department - 1: L1 category - 2: L2 category - 3: L3 category",
+            "example": 1
+          },
+          "attributes": {
+            "type": "array",
+            "description": "A list of attributes associated with the taxonomy item, such as color or size. These attributes may differ depending on the level of the taxonomy.",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyItemAttributesResponseSchema"
+            }
+          },
+          "product_template_slug": {
+            "type": "string",
+            "description": "A slug identifier for the template associated with this taxonomy item. It links the taxonomy to a specific product template.",
+            "example": "casual-template"
+          },
+          "product_template_name": {
+            "type": "string",
+            "description": "A Name for the template associated with this taxonomy item. It links the taxonomy to a specific product template.",
+            "example": "Casual Template"
+          }
+        }
+      },
+      "TaxonomyResponseSchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of taxonomy items for the requested level level. Each item represents a taxonomy node with details about its category, attributes, and associated template.",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyItemResponseSchema"
+            }
+          }
+        }
+      },
+      "ValidationErrors": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "description": "A list of validation errors in the request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A brief description of the error encountered."
+          },
+          "field": {
+            "type": "string",
+            "description": "The field in the request that caused the error."
+          }
+        },
+        "required": [
+          "message",
+          "field"
+        ]
+      },
+      "ApplicationResponseSchema": {
         "type": "object",
         "properties": {
           "application": {
@@ -1252,7 +1577,7 @@
           },
           "_id": {
             "type": "string",
-            "description": "The unique identifier (24-digit Mongo Object ID) of the domain"
+            "description": "The unique identifier of the domain"
           },
           "name": {
             "type": "string"
@@ -1341,7 +1666,6 @@
         }
       },
       "Application": {
-        "additionalProperties": true,
         "properties": {
           "website": {
             "$ref": "#/components/schemas/ApplicationWebsite"
@@ -1354,11 +1678,12 @@
           },
           "description": {
             "type": "string",
-            "description": "It contains detailed information about the sales channel."
+            "description": "It contains detailed information about the sales channel"
           },
           "channel_type": {
             "type": "string",
-            "description": "It indicates different channel types like store, website-and-mobile-apps. Default value is store"
+            "description": "It indicates different channel types like store, website-and-mobile-apps. Default value is store.",
+            "x-not-enum": true
           },
           "cache_ttl": {
             "type": "integer",
@@ -1371,11 +1696,11 @@
           },
           "is_active": {
             "type": "boolean",
-            "description": "Indicates sales channel is active or not active"
+            "description": "Indicates whether a sales channel is active or not active"
           },
           "_id": {
             "type": "string",
-            "description": "The unique identifier (24-digit Mongo Object ID) of the sales channel"
+            "description": "The unique identifier of the sales channel"
           },
           "name": {
             "type": "string",
@@ -1383,7 +1708,7 @@
           },
           "owner": {
             "type": "string",
-            "description": "The unique identifier (24-digit Mongo Object ID) of owner who owns the application"
+            "description": "The unique identifier of owner who owns the application"
           },
           "company_id": {
             "type": "integer",
@@ -1392,7 +1717,7 @@
           },
           "token": {
             "type": "string",
-            "description": "Random generated fix length string for sales channel. It is required and auto-generated."
+            "description": "Randomly generated fixed-length string for sales channel. It is required and auto-generated."
           },
           "redirections": {
             "type": "array",
@@ -1408,11 +1733,13 @@
           },
           "created_at": {
             "type": "string",
-            "description": "ISO 8601 timestamp of sales channel creation"
+            "description": "ISO 8601 timestamp of sales channel creation",
+            "format": "date-time"
           },
-          "modified_at": {
+          "updated_at": {
             "type": "string",
-            "description": "ISO 8601 timestamp of sales channel updation"
+            "description": "ISO 8601 timestamp of sales channel updation",
+            "format": "date-time"
           },
           "__v": {
             "type": "integer",
@@ -1436,7 +1763,7 @@
           },
           "app_type": {
             "type": "string",
-            "description": "It shows application is live or in development mode.",
+            "description": "It shows whether application is live or in development mode",
             "enum": [
               "live",
               "development"
@@ -1450,34 +1777,24 @@
           },
           "slug": {
             "type": "string"
-          },
-          "mode": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "tokens": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/TokenSchema"
-            }
           }
         }
       },
-      "TokenSchema": {
+      "NotFound": {
         "type": "object",
         "properties": {
-          "token": {
-            "type": "string"
-          },
-          "created_by": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "created_at": {
+          "message": {
             "type": "string",
-            "description": "ISO 8601 timestamp of when token created"
+            "description": "Response message for not found"
+          }
+        }
+      },
+      "BadRequestSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "description": "Failure message (in a string format)",
+            "type": "string"
           }
         }
       },
@@ -1540,7 +1857,8 @@
           },
           "phone_code": {
             "type": "string",
-            "example": "990999092"
+            "example": "990999092",
+            "x-not-enum": true
           },
           "type": {
             "type": "string",
@@ -1567,10 +1885,12 @@
             "$ref": "#/components/schemas/LocationDefaultLanguage"
           },
           "state_code": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true
           },
           "country_code": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true
           },
           "latitude": {
             "type": "string"
@@ -1590,86 +1910,6 @@
             }
           }
         }
-      },
-      "VersionApplication": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "version": {
-            "type": "string"
-          }
-        }
-      },
-      "VersionDeviceOS": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "VersionDevice": {
-        "type": "object",
-        "properties": {
-          "os": {
-            "$ref": "#/components/schemas/VersionDeviceOS"
-          }
-        }
-      },
-      "VersionRequest": {
-        "type": "object",
-        "properties": {
-          "application": {
-            "$ref": "#/components/schemas/VersionApplication"
-          },
-          "device": {
-            "$ref": "#/components/schemas/VersionDevice"
-          }
-        },
-        "required": [
-          "application",
-          "device"
-        ]
-      },
-      "VersionUpdateDialogue": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string"
-          },
-          "interval": {
-            "type": "integer"
-          }
-        }
-      },
-      "VersionResponse": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "update_dialog": {
-            "$ref": "#/components/schemas/VersionUpdateDialogue"
-          },
-          "is_app_blocked": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "type",
-          "title",
-          "description",
-          "update_dialog",
-          "is_app_blocked"
-        ]
       },
       "BasicDetailsPayloadSchema": {
         "type": "object",
@@ -1744,8 +1984,7 @@
           "termsofservice_url": {
             "type": "string"
           }
-        },
-        "additionalProperties": true
+        }
       },
       "WhatsNew": {
         "type": "object",
@@ -1975,8 +2214,32 @@
           }
         }
       },
+      "AnalyticsTagsSchema": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "__v": {
+            "type": "number"
+          },
+          "body_code": {
+            "type": "string",
+            "x-not-enum": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "header_code": {
+            "type": "string",
+            "x-not-enum": true
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
       "CustomPageBySlugSchema": {
-        "additionalProperties": true,
         "type": "object",
         "properties": {
           "_id": {
@@ -2016,10 +2279,12 @@
             "type": "boolean"
           },
           "created_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "modified_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "__v": {
             "type": "number"
@@ -2104,8 +2369,7 @@
           "__v": {
             "type": "integer"
           }
-        },
-        "additionalProperties": true
+        }
       },
       "HomePageContentSchema": {
         "type": "object",
@@ -2123,13 +2387,21 @@
             "type": "boolean"
           },
           "page_type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "home",
+              "features",
+              "pricing",
+              "theme"
+            ]
           },
           "created_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "modified_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "__v": {
             "type": "number"
@@ -2169,8 +2441,7 @@
           "modified_by": {
             "$ref": "#/components/schemas/CreatedBySchema"
           }
-        },
-        "additionalProperties": true
+        }
       },
       "MediaSchema": {
         "type": "object",
@@ -2200,7 +2471,6 @@
         "additionalProperties": true
       },
       "PricingBannerSchema": {
-        "additionalProperties": true,
         "type": "object",
         "properties": {
           "_id": {
@@ -2269,7 +2539,11 @@
             "type": "string"
           },
           "sub_type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "external",
+              "inline"
+            ]
           },
           "position": {
             "type": "string"
@@ -2287,10 +2561,12 @@
             "type": "string"
           },
           "created_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "modified_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "__v": {
             "type": "number"
@@ -2335,7 +2611,11 @@
             "$ref": "#/components/schemas/ConfigurationSchema"
           },
           "entity_type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "partner",
+              "platform"
+            ]
           },
           "type": {
             "type": "string"
@@ -2344,10 +2624,12 @@
             "type": "boolean"
           },
           "updated_at": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "created_at": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           "__v": {
             "type": "number"
@@ -2377,48 +2659,6 @@
           }
         }
       },
-      "SDKLinksResponseSchema": {
-        "type": "object",
-        "properties": {
-          "readmes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SDKLinkObjectSchema"
-            }
-          }
-        }
-      },
-      "SDKLinkObjectSchema": {
-        "type": "object",
-        "properties": {
-          "owner": {
-            "type": "string"
-          },
-          "repo": {
-            "type": "string"
-          },
-          "path": {
-            "type": "string"
-          },
-          "image": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        }
-      },
-      "SDKbyTypeResponseSchema": {
-        "type": "object",
-        "properties": {
-          "readme_content": {
-            "type": "string"
-          }
-        }
-      },
       "ContentAPIError": {
         "type": "object",
         "properties": {
@@ -2444,33 +2684,184 @@
             "type": "string"
           },
           "meta": {
-            "type": "object"
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "Language": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier for the language entry in the system database.",
+            "example": "1"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Standard language code following ISO 639-1 format for language identification.",
+            "example": "en"
+          },
+          "direction": {
+            "type": "string",
+            "description": "Text direction specification for proper content rendering in the language.",
+            "enum": [
+              "ltr",
+              "rtl"
+            ],
+            "example": "ltr"
+          },
+          "name": {
+            "type": "string",
+            "description": "Full name of the language in English for easy reference and display at the merchant panel.",
+            "example": "English"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Translated name of the language in English for easy reference and display at the website.",
+            "example": "English"
+          }
+        },
+        "required": [
+          "locale",
+          "direction",
+          "name"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Detailed error message explaining the nature of the failure or invalid request.",
+            "example": "Field 'locale' is required."
+          }
+        }
+      },
+      "TranslatableResource": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier for the translatable resource in the system.",
+            "example": "1"
+          },
+          "type": {
+            "type": "string",
+            "description": "Categorization of the resource indicating its context and ownership level",
+            "enum": [
+              "company.product",
+              "application.product",
+              "application.blog",
+              "application.coupon",
+              "application.promotion",
+              "application.collection",
+              "application.page",
+              "company",
+              "company.brand",
+              "company.store",
+              "company.product_bundle",
+              "company.size_guide",
+              "application.theme",
+              "application.theme.page",
+              "application.navigation",
+              "company.custom_field",
+              "application.custom_field",
+              "company.custom_object",
+              "application.custom_object",
+              "application.detail",
+              "application.information",
+              "application.platform.config",
+              "application.seo",
+              "application.product_configuration.sort",
+              "application.product_configuration.filter",
+              "application.product_configuration.variant",
+              "application.product_configuration.category",
+              "global.order.reason",
+              "global.shipment.status",
+              "company.order.reason",
+              "application.legal",
+              "application.faq.category"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "Primary identifier or title of the resource in its default language.",
+            "example": "Product A"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed explanation of the resource's purpose and content scope.",
+            "example": "Description of Product A"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          }
+        },
+        "required": [
+          "type",
+          "name",
+          "description",
+          "meta"
+        ]
+      },
+      "Meta": {
+        "type": "object",
+        "properties": {
+          "created_by": {
+            "type": "string",
+            "description": "ID of the user who initially created the resource.",
+            "example": "65dbf9aa8dbb86c55c4d1946"
+          },
+          "updated_by": {
+            "type": "string",
+            "description": "ID of the user who last modified the resource.",
+            "example": "65dbf9aa8dbb86c55c4d1946"
+          },
+          "created_at": {
+            "type": "string",
+            "description": "Timestamp indicating when the resource was first created.",
+            "format": "date-time",
+            "example": "2024-01-01T12:00:00Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "description": "Timestamp indicating when the resource was last modified.",
+            "format": "date-time",
+            "example": "2024-01-01T12:00:00Z"
+          }
+        }
+      },
+      "ResourceTranslation": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Unique identifier for the translation entry in the system.",
+            "example": "1"
+          },
+          "locale": {
+            "type": "string",
+            "description": "Language code indicating the target language of the translation.",
+            "example": "hi"
+          },
+          "value": {
+            "type": "object",
+            "description": "Contains the translated content with flexible schema based on resource type.",
+            "additionalProperties": true
           }
         }
       },
       "CategoryL1": {
         "type": "object",
         "properties": {
-          "description": {
-            "type": "string"
-          },
-          "display": {
-            "type": "string"
-          },
-          "level": {
-            "type": "number"
-          },
-          "logo": {
-            "type": "string"
-          },
           "slug": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
+            "type": "string",
+            "description": "URL-friendly identifier for the category."
           },
           "_id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the level 1 category."
           }
         }
       },
@@ -2478,35 +2869,32 @@
         "type": "object",
         "properties": {
           "parent": {
-            "type": "string"
-          },
-          "display": {
-            "type": "string"
-          },
-          "level": {
-            "type": "number"
+            "type": "string",
+            "description": "ID of the parent category (Level 1) to which this category belongs."
           },
           "slug": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
+            "type": "string",
+            "description": "URL-friendly identifier for the category."
           },
           "_id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the level 2 category."
           }
         }
       },
       "CategoryCommon": {
+        "description": "Schema for representing hierarchical category data.",
         "type": "object",
         "properties": {
-          "category_l1": {
+          "categories_l1": {
+            "description": "Array of level 1 categories associated with an extension.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CategoryL1"
             }
           },
-          "category_l2": {
+          "categories_l2": {
+            "description": "Array of level 2 categories associated with an extension.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CategoryL2"
@@ -2516,9 +2904,24 @@
       },
       "ContactInfo": {
         "type": "object",
+        "description": "Contact info and common URLs for the extesnion user",
         "properties": {
           "support": {
             "$ref": "#/components/schemas/Support"
+          }
+        }
+      },
+      "CommingSoon": {
+        "description": "Information related to the \"coming soon\" status of the extension.",
+        "type": "object",
+        "properties": {
+          "is_coming_soon": {
+            "type": "boolean",
+            "description": "Flag indicating whether the extension is marked as \"coming soon.\""
+          },
+          "upvote_count": {
+            "type": "number",
+            "description": "Number of upvotes for the \"coming soon\" extension."
           }
         }
       },
@@ -2532,89 +2935,116 @@
             "$ref": "#/components/schemas/ContactInfo"
           },
           "created_at": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp indicating when the extension was created."
           },
           "current_status": {
-            "type": "string"
+            "type": "string",
+            "description": "Current status of the extension.",
+            "enum": [
+              "active",
+              "inactive"
+            ]
           },
           "details": {
             "$ref": "#/components/schemas/Details"
           },
           "extension_id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the extension."
           },
-          "is_coming_soon": {
-            "type": "boolean"
+          "coming_soon": {
+            "$ref": "#/components/schemas/CommingSoon"
           },
           "listing_info": {
             "$ref": "#/components/schemas/ListingInfo"
           },
           "modified_at": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp indicating when the extension was last modified."
           },
           "organization": {
             "$ref": "#/components/schemas/Organization"
           },
           "organization_id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the organization where the extension is created."
           },
           "plan_type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "free",
+              "one_time",
+              "recurring"
+            ],
+            "description": "Type of pricing plan for the extension (e.g., free, one-time, recurring)."
           },
           "plans": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Plans"
-            }
+            },
+            "description": "Array of pricing plans associated with the extension."
           },
           "plans_url": {
-            "type": "string"
-          },
-          "review_instructions": {
-            "type": "string"
+            "type": "string",
+            "description": "URL to access detailed pricing plan information."
           },
           "scope": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Array of permissions or scopes required by the extension."
           },
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "URL-friendly identifier for the extension."
           },
           "_id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the extension."
           }
         }
       },
       "Organization": {
+        "description": "Data of the extension organization",
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the organization."
           },
           "slug": {
-            "type": "string"
+            "type": "string",
+            "description": "URL-friendly identifier for the organization."
           }
         }
       },
       "ListingInfo": {
+        "description": "Extension info to be shown on market info",
         "type": "object",
         "properties": {
           "icon": {
-            "type": "string"
+            "type": "string",
+            "description": "URL for the extension's icon."
           },
           "keywords": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Array of keywords associated with the extension."
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Display name of the extension."
           },
           "tagline": {
-            "type": "string"
+            "type": "string",
+            "description": "Short tagline summarizing the extension's purpose."
           }
         }
       },
@@ -2622,62 +3052,74 @@
         "type": "object",
         "properties": {
           "title": {
-            "type": "string"
+            "type": "string",
+            "description": "Title of the benefit offered by the extension."
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Detailed explanation of the benefit."
           }
         }
       },
       "Screenshots": {
+        "description": "Contains URLs for desktop and mobile visuals of the extension.",
         "type": "object",
         "properties": {
           "desktop": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Array of URLs for desktop screenshots."
           },
           "mobile": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Array of URLs for mobile screenshots."
           }
         }
       },
       "Details": {
+        "description": "Details of the extension.",
         "type": "object",
         "properties": {
           "benefits": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Benefits"
-            }
+            },
+            "description": "Array of benefits provided by the extension."
           },
           "demo_url": {
-            "type": "string"
+            "type": "string",
+            "description": "URL for a demo or preview of the extension."
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Detailed description of the extension."
           },
           "integration": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Array of integration points supported by the extension."
           },
           "video_url": {
             "type": "array",
             "items": {
               "type": "object"
-            }
+            },
+            "description": "Array of video URLs showcasing the extension."
           },
           "youtube": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Array of YouTube video URLs about the extension."
           },
           "screenshots": {
             "$ref": "#/components/schemas/Screenshots"
@@ -2685,33 +3127,51 @@
         }
       },
       "Support": {
+        "description": "Support info for the extension.",
         "type": "object",
         "properties": {
           "email": {
-            "type": "string"
+            "type": "string",
+            "description": "Support email address."
           },
           "faq_url": {
-            "type": "string"
+            "type": "string",
+            "description": "URL for the FAQ page."
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "description": "Support phone number."
           },
           "privacy_policy_url": {
-            "type": "string"
+            "type": "string",
+            "description": "URL for the privacy policy."
           },
           "website_url": {
-            "type": "string"
+            "type": "string",
+            "description": "Official website URL."
+          },
+          "terms_of_service": {
+            "type": "string",
+            "description": "URL for the terms of service."
+          },
+          "country_code": {
+            "type": "string",
+            "description": "The dialing code for the country, used with mobile numbers.",
+            "x-not-enum": true
           }
         }
       },
       "Price": {
+        "description": "Represents the pricing details, including the monetary amount and the currency type.",
         "type": "object",
         "properties": {
           "amount": {
-            "type": "number"
+            "type": "number",
+            "description": "Amount for the pricing."
           },
           "currency": {
-            "type": "string"
+            "type": "string",
+            "description": "Currency in which the price is specified."
           }
         }
       },
@@ -2719,19 +3179,29 @@
         "type": "object",
         "properties": {
           "additional_charges": {
-            "type": "string"
+            "type": "string",
+            "description": "Additional charges applicable to the plan."
           },
           "features": {
-            "type": "string"
+            "type": "string",
+            "description": "Features included in the plan."
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Name of the plan."
           },
           "trial_days": {
-            "type": "number"
+            "type": "number",
+            "description": "Number of trial days offered with the plan."
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "description": "Type of plan (e.g., free, recurring, one-time).",
+            "enum": [
+              "free",
+              "one_time",
+              "recurring"
+            ]
           },
           "price": {
             "$ref": "#/components/schemas/Price"
@@ -2742,16 +3212,26 @@
         }
       },
       "Recurring": {
+        "description": "Deatils of the recurring plan.",
         "type": "object",
         "properties": {
           "recurring_time": {
-            "type": "number"
+            "type": "number",
+            "format": "int64",
+            "description": "Frequency of the recurring charge in days."
           },
           "yearly_amount": {
-            "type": "number"
+            "type": "number",
+            "description": "Total yearly amount for the recurring plan."
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "year",
+              "month",
+              "free"
+            ],
+            "description": "Type of recurring plan (e.g., monthly, yearly)."
           }
         }
       },
@@ -2759,48 +3239,64 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "integer"
+            "type": "integer",
+            "description": "The unique identifier for the event configuration."
           },
           "event_name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the event."
           },
           "event_type": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The type of the event."
           },
           "event_category": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The category of the event."
           },
           "event_schema": {
             "nullable": true,
             "type": "object",
+            "description": "The schema defining the event data structure.",
             "additionalProperties": true
           },
           "version": {
-            "type": "string"
+            "type": "string",
+            "description": "The version of the event configuration."
           },
           "display_name": {
-            "type": "string"
+            "type": "string",
+            "description": "A user-friendly name for the event."
           },
           "description": {
             "type": "string",
+            "description": "A detailed description of the event.",
             "nullable": true
           },
           "created_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the event configuration was created."
           },
           "updated_on": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time",
+            "description": "The timestamp when the event configuration was last updated."
           },
           "group": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "The group to which the event belongs."
           }
         }
       },
-      "EventConfigResponse": {
+      "EventDetails": {
         "properties": {
           "event_configs": {
             "type": "array",
+            "description": "A list of event configuration details.",
             "items": {
               "$ref": "#/components/schemas/EventConfig"
             }
@@ -2811,16 +3307,22 @@
         "type": "object",
         "properties": {
           "event_name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the event."
           },
           "event_type": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The type of the event."
           },
           "event_category": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The category of the event."
           },
           "version": {
-            "type": "string"
+            "type": "string",
+            "description": "The version of the event configuration."
           }
         }
       },
@@ -2828,10 +3330,12 @@
         "type": "object",
         "properties": {
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "The message to be sent in the notification."
           },
           "emails": {
             "type": "array",
+            "description": "List of email addresses to notify.",
             "items": {
               "type": "string"
             }
@@ -2840,78 +3344,95 @@
       },
       "EventSchema": {
         "type": "object",
+        "description": "Defines the structure for event payload and metadata.",
         "properties": {
           "payload": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": true,
+            "description": "The event data payload."
           },
           "meta": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": true,
+            "description": "Metadata related to the event."
           }
         }
       },
       "InternalTransformEvent": {
         "type": "object",
+        "description": "Represents the internal structure of a transformation event.",
         "properties": {
           "trace_id": {
             "type": "array",
+            "description": "List of trace IDs related to the event.",
             "items": {
               "type": "string"
             }
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the transformation event."
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "description": "The type of the transformation event."
           },
           "version": {
-            "type": "string"
+            "type": "string",
+            "description": "The version of the transformation event."
           },
           "created_timestamp": {
-            "type": "number"
+            "type": "number",
+            "description": "The timestamp when the event was created."
           }
         }
       },
       "TransformEventData": {
         "type": "object",
+        "description": "Contains detailed event data for processing transformation events.",
         "properties": {
           "event": {
             "$ref": "#/components/schemas/InternalTransformEvent"
           },
           "company_id": {
-            "type": "number"
+            "type": "number",
+            "description": "The company ID associated with the event."
           },
           "contains": {
             "type": "array",
+            "description": "List of strings related to the event.",
             "items": {
               "type": "string"
             }
           },
           "payload": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": true,
+            "description": "Event data payload."
           }
         }
       },
       "TransformEventServiceMeta": {
         "type": "object",
+        "description": "Contains metadata name related to the transformation service.",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the transformation service."
           }
         }
       },
       "TransformEventAssociation": {
         "type": "object",
+        "description": "Contains association details for a transformation event.",
         "properties": {
           "company_id": {
-            "type": "number"
+            "type": "number",
+            "description": "The company ID associated with the event."
           }
         }
       },
-      "TransformEventRequest": {
+      "TransformEventPayload": {
         "type": "object",
         "required": [
           "event_name",
@@ -2922,23 +3443,29 @@
         ],
         "properties": {
           "event_name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the event."
           },
           "event_type": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The type of the event."
           },
           "event_category": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The category of the event."
           },
           "event_version": {
-            "type": "string"
+            "type": "string",
+            "description": "The version of the event."
           },
           "event": {
             "$ref": "#/components/schemas/EventSchema"
           }
         }
       },
-      "ValidateSchemaRequest": {
+      "ValidateSchemaPayload": {
         "type": "object",
         "required": [
           "event_name",
@@ -2950,42 +3477,52 @@
         ],
         "properties": {
           "event_name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the event to validate."
           },
           "event_type": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The type of the event."
           },
           "event_category": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The category of the event."
           },
           "event_version": {
-            "type": "string"
+            "type": "string",
+            "description": "The version of the event to validate."
           },
           "event": {
             "$ref": "#/components/schemas/EventSchema"
           },
           "event_schema": {
             "type": "object",
-            "additionalProperties": true
+            "additionalProperties": true,
+            "description": "The schema defining the structure of the event."
           }
         }
       },
-      "ValidateSchemaResponse": {
+      "ValidateSchemaResult": {
         "type": "object",
         "properties": {
           "status": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Indicates whether the schema is valid (true) or invalid (false)."
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "description": "A message providing additional details about the validation result."
           }
         }
       },
-      "TransformEventResponse": {
+      "TransformEventResult": {
         "type": "object",
         "properties": {
           "event_trace_id": {
             "type": "array",
+            "description": "List of trace IDs related to the transformation event.",
             "items": {
               "type": "string"
             }
@@ -2994,16 +3531,21 @@
             "$ref": "#/components/schemas/TransformEventData"
           },
           "event_name": {
-            "type": "string"
+            "type": "string",
+            "description": "The name of the transformation event."
           },
           "version": {
-            "type": "string"
+            "type": "string",
+            "description": "The version of the transformation event."
           },
           "status": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "The status of the event processing."
           },
           "event_type": {
-            "type": "string"
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The type of the transformation event."
           },
           "service_meta": {
             "$ref": "#/components/schemas/TransformEventServiceMeta"
@@ -3493,8 +4035,8 @@
             "threshold": 1
           },
           "seller_support": {
-            "email": "help@fyndplatform.com",
-            "phone_number": 9012345678
+            "email": "test@example.com",
+            "phone_number": 8888888888
           },
           "copyright": "Shopsense Retail Technologies Ltd., WeWork Vijay Diamond, Kondivita, Andheri West, Mumbai 400093",
           "address": "Shop details - 201301",
@@ -5656,6 +6198,16 @@
           }
         }
       },
+      "AnalyticsTagsExample": {
+        "value": {
+          "_id": "5f58f5f1d6baa8c51862f051",
+          "__v": 0,
+          "body_code": "test",
+          "enabled": true,
+          "header_code": "test",
+          "name": "Google Tag Manager"
+        }
+      },
       "CustomPageBySlugExample": {
         "value": {
           "_id": "64ca3f55f24255b8c6d7bd4b",
@@ -5823,56 +6375,17 @@
       },
       "CredentialsExample": {
         "value": {
-          "items": [
-            {
-              "_id": "652536c08b3b32b5028dac75",
-              "entity_type": "partner",
-              "type": "freshchat",
-              "is_enable": true,
-              "configuration": {
-                "token": "a3e4gf20b-d11g-4512-n3zq-03b9aa7e1yxz",
-                "host": "https://wchat.freshchat.com"
-              },
-              "created_at": "2023-04-11T04:38:27.760+0000",
-              "updated_at": "2023-11-27T09:45:04.253+0000",
-              "__v": 0
-            }
-          ]
-        }
-      },
-      "SDKLinksResponseExample": {
-        "value": {
-          "readmes": [
-            {
-              "owner": "gofynd",
-              "repo": "fdk-client-javascript",
-              "path": "https://raw.githubusercontent.com/gofynd/fdk-client-javascript/master/README.md",
-              "name": "Javascript",
-              "type": "javascript",
-              "image": "https://hdn-1.fynd.com/platform/pictures/feature-image/original/Ap157oBMG-platform-feature.png"
-            },
-            {
-              "owner": "gofynd",
-              "repo": "fdk-client-kotlin",
-              "path": "https://raw.githubusercontent.com/gofynd/fdk-client-kotlin/master/README.md",
-              "name": "Kotlin",
-              "type": "kotlin",
-              "image": "https://hdn-1.fynd.com/platform/pictures/feature-image/original/1gTntEHQA-platform-feature.png"
-            },
-            {
-              "owner": "gofynd",
-              "repo": "fdk-client-swift",
-              "path": "https://raw.githubusercontent.com/gofynd/fdk-client-swift/master/README.md",
-              "name": "Swift",
-              "type": "swift",
-              "image": "https://hdn-1.fynd.com/platform/pictures/feature-image/original/2lvrwAWpN-platform-feature.png"
-            }
-          ]
-        }
-      },
-      "SDKByTypeResponse": {
-        "value": {
-          "readme_content": "some documentation string containing data from github url"
+          "_id": "652536c08b3b32b5028dac75",
+          "entity_type": "partner",
+          "type": "freshchat",
+          "is_enable": true,
+          "configuration": {
+            "token": "a3e4gf20b-d11g-4512-n3zq-03b9aa7e1yxz",
+            "host": "https://wchat.freshchat.com"
+          },
+          "created_at": "2023-04-11T04:38:27.760+0000",
+          "updated_at": "2023-11-27T09:45:04.253+0000",
+          "__v": 0
         }
       },
       "4XXAPIError": {
