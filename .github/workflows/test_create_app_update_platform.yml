@@ -1,0 +1,28 @@
+name: Update Postman Collection
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update_postman:
+    if: ${{ github.event.release.prerelease == false }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Create App / Update Platform
+        run: |
+          echo "🆕 Creating Application collection..."
+          curl --location --request POST 'https://api.getpostman.com/collections?workspace=${{ secrets.POSTMAN_WORKSPACE_ID }}' \
+            --header 'Content-Type: application/json' \
+            --header 'X-Api-Key: ${{ secrets.POSTMAN_API_KEY }}' \
+            --data-binary "@postman/application.json"
+          echo "🟨 Add the new Application UID to SDK config"
+
+          echo "🔁 Updating Platform collection..."
+          curl --location --request PUT 'https://api.getpostman.com/collections/xyz456-plat' \
+            --header 'Content-Type: application/json' \
+            --header 'X-Api-Key: ${{ secrets.POSTMAN_API_KEY }}' \
+            --data-binary "@postman/platform.json"
+          echo "✅ Platform updated!"
