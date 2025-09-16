@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Application Side APIs v2.7.8",
-    "version": "3.7.0",
+    "title": "Fynd Platform's Application Side APIs v2.8.0",
+    "version": "3.8.0",
     "description": "Fynd Platform's Application Side APIs"
   },
   "openapi": "3.0.2",
@@ -33904,6 +33904,455 @@
         ]
       }
     },
+    "/service/application/payment/v2.0/refund/user/beneficiary": {
+      "get": {
+        "summary": "getRefundBeneficiaries | Get Refund Beneficiaries",
+        "description": "Returns a list of UPI and Bank refund beneficiaries associated with a user.   Both `order_id` and `shipment_id` are optional query parameters.   Use the optional filter_by enum parameter to refine the response. When the value of filter_by is order, the API returns only beneficiaries associated with the order. When the value of filter_by is shipment, it returns only beneficiaries associated with the shipment.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "order_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique ID of the order"
+          },
+          {
+            "in": "query",
+            "name": "shipment_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique ID of the shipment"
+          },
+          {
+            "in": "query",
+            "name": "filter_by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "order",
+                "shipment"
+              ]
+            },
+            "description": "Optional filter to restrict beneficiaries. When provided, only beneficiaries directly linked to the specified `order_id` or `shipment_id` will be returned."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns list of saved refund beneficiary accounts by type (UPI/Bank).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundBeneficiaries"
+                },
+                "examples": {
+                  "valid_response_success": {
+                    "value": {
+                      "upi": [
+                        {
+                          "is_active": true,
+                          "is_verified": false,
+                          "transfer_mode": "upi",
+                          "display_name": "UPI",
+                          "vpa_address": "success@upi",
+                          "customer_name": "JOHN DOE",
+                          "id": "3cad4554de2fca6c05c5d0be852d4c61",
+                          "logo": "testz0/misc/default-assets/original/NB_ICICI.png"
+                        }
+                      ],
+                      "bank": [
+                        {
+                          "ifsc_code": "ICIC0000009",
+                          "is_active": true,
+                          "is_verified": true,
+                          "transfer_mode": "bank",
+                          "display_name": "BANK",
+                          "account_holder": "JOHN DOE",
+                          "logo": "testz0/misc/default-assets/original/NB_ICICI.png",
+                          "id": "56584829bba34e3eb363c761037c80c9",
+                          "account_no": "XXXX-XXXX-3210"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorCodeDetails"
+                },
+                "example": {
+                  "success": false,
+                  "data": {
+                    "status": "failed"
+                  },
+                  "message": "error message"
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Beneficiary"
+        ],
+        "tags": [
+          "Payment"
+        ]
+      },
+      "post": {
+        "summary": "addBeneficiary | Add a beneficiary for refunds",
+        "description": "Adds a bank or UPI beneficiary to the user account for processing refunds.",
+        "tags": [
+          "Payment"
+        ],
+        "requestBody": {
+          "description": "Request payload for adding beneficiary details for Bank and UPI",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddBeneficiaryRequestDetails"
+              },
+              "examples": {
+                "valid_bank_request": {
+                  "value": {
+                    "details": {
+                      "account_holder": "JOHN DOE",
+                      "account_no": "09876543210",
+                      "ifsc_code": "ICIC0000009"
+                    },
+                    "order_id": "FY67A0989E68989666B7",
+                    "shipment_id": 17001292715841217000
+                  }
+                },
+                "valid_upi_request": {
+                  "value": {
+                    "details": {
+                      "upi": "success@upi"
+                    },
+                    "order_id": "FY67A0989E68989666B7",
+                    "shipment_id": 17001292715841217000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Returns beneficiary details are saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddBeneficiaryResponseDetails"
+                },
+                "examples": {
+                  "valid_bank_response": {
+                    "value": {
+                      "message": "Account successfully created",
+                      "is_verified": true,
+                      "id": "V2fc4XjiqJynRpXBHFpP693kVMvNMorElAvU7tWfTok=",
+                      "account_no": "XXXX-XXXX-3210",
+                      "account_holder": "JOHN DOE",
+                      "bank_name": "ICICI Bank",
+                      "logo": "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/testz0/misc/default-assets/original/NB_ICICI.png"
+                    }
+                  },
+                  "valid_upi_response": {
+                    "value": {
+                      "message": "Account successfully created",
+                      "is_verified": true,
+                      "id": "V2fc4XjiqJynRpXBHFpP693kVMvNMorElAvU7tWfTok=",
+                      "upi": "success@upi",
+                      "account_holder": "JOHN DOE",
+                      "logo": "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/testz0/misc/default-assets/original/UPI.png"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorCodeDetails"
+                },
+                "example": {
+                  "success": false,
+                  "data": {
+                    "status": "failed"
+                  },
+                  "message": "error message"
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Beneficiary"
+        ]
+      }
+    },
+    "/service/application/payment/v1.0/refund/account/{id}": {
+      "delete": {
+        "summary": "deleteBeneficiary | Delete a refund beneficiary",
+        "description": "This API endpoint is used to delete a refund beneficiary using their beneficiary ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique ID associated with the beneficiary",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Beneficiary successfully deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteBeneficiaryDetails"
+                },
+                "example": {
+                  "message": "Beneficiary successfully deleted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorCodeDetails"
+                },
+                "example": {
+                  "success": false,
+                  "data": {
+                    "status": "failed"
+                  },
+                  "message": "error message"
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Beneficiary"
+        ],
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
+    "/service/application/payment/v2.0/refund/user/beneficiary-otp": {
+      "get": {
+        "summary": "getRefundBeneficiariesUsingOTPSession | Get Refund Beneficiaries using OTP session",
+        "description": "Returns a list of UPI and Bank refund beneficiaries associated with a user for a given order and shipment. Use the optional filter_by enum parameter to refine the response. When the value of filter_by is order, the API returns only beneficiaries associated with the order. When the value of filter_by is shipment, it returns only beneficiaries associated with the shipment.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "order_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique ID of the order"
+          },
+          {
+            "in": "query",
+            "name": "shipment_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique ID of the shipment"
+          },
+          {
+            "in": "query",
+            "name": "filter_by",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "order",
+                "shipment"
+              ]
+            },
+            "description": "Optional filter to restrict beneficiaries. When provided, only beneficiaries directly linked to the specified `order_id` or `shipment_id` will be returned."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns list of saved refund beneficiary accounts by type (UPI/Bank).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundBeneficiaries"
+                },
+                "examples": {
+                  "valid_response_success": {
+                    "value": {
+                      "upi": [
+                        {
+                          "is_active": true,
+                          "is_verified": false,
+                          "transfer_mode": "upi",
+                          "display_name": "UPI",
+                          "vpa_address": "success@upi",
+                          "customer_name": "JOHN DOE",
+                          "beneficiary_id": "3cad4554de2fca6c05c5d0be852d4c61",
+                          "id": "3cad4554de2fca6c05c5d0be852d4c61",
+                          "logo": "testz0/misc/default-assets/original/NB_ICICI.png"
+                        }
+                      ],
+                      "bank": [
+                        {
+                          "ifsc_code": "ICIC0000009",
+                          "is_active": true,
+                          "is_verified": true,
+                          "transfer_mode": "bank",
+                          "display_name": "BANK",
+                          "account_holder": "JOHN DOE",
+                          "logo": "testz0/misc/default-assets/original/NB_ICICI.png",
+                          "beneficiary_id": "56584829bba34e3eb363c761037c80c9",
+                          "id": "56584829bba34e3eb363c761037c80c9",
+                          "account_no": 9876543210
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorCodeDetails"
+                },
+                "example": {
+                  "success": false,
+                  "data": {
+                    "status": "failed"
+                  },
+                  "message": "error message"
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Beneficiary"
+        ],
+        "tags": [
+          "Payment"
+        ]
+      },
+      "post": {
+        "summary": "addRefundBeneficiaryUsingOTPSession | Add a beneficiary for refunds using OTP session",
+        "description": "Adds a bank or UPI beneficiary to the user account after completing an OTP verification session. The beneficiary details are securely linked with the user's refund preferences and will be used for processing refunds against specific orders and shipments.",
+        "tags": [
+          "Payment"
+        ],
+        "requestBody": {
+          "description": "Request payload for adding beneficiary details for Bank and UPI",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddBeneficiaryRequestDetails"
+              },
+              "examples": {
+                "valid_bank_request": {
+                  "value": {
+                    "details": {
+                      "account_holder": "JOHN DOE",
+                      "account_no": "09876543210",
+                      "ifsc_code": "ICIC0000009"
+                    },
+                    "order_id": "FY67A0989E68989666B7",
+                    "shipment_id": 17001292715841217000
+                  }
+                },
+                "valid_upi_request": {
+                  "value": {
+                    "details": {
+                      "upi": "success@upi"
+                    },
+                    "order_id": "FY67A0989E68989666B7",
+                    "shipment_id": 17001292715841217000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Returns beneficiary details are saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddBeneficiaryResponseDetails"
+                },
+                "examples": {
+                  "valid_bank_response": {
+                    "value": {
+                      "message": "Account successfully created",
+                      "is_verified": true,
+                      "id": "3e178eb467a6414d85c4173f5006a4e8",
+                      "account_no": "XXXX-XXXX-3210",
+                      "account_holder": "JOHN DOE",
+                      "bank_name": "ICICI Bank",
+                      "logo": "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/testz0/misc/default-assets/original/NB_ICICI.png"
+                    }
+                  },
+                  "valid_upi_response": {
+                    "value": {
+                      "message": "Account successfully created",
+                      "is_verified": true,
+                      "id": "3e178eb467a6414d85c4173f5006a4e8",
+                      "upi": "success@upi",
+                      "account_holder": "JOHN DOE",
+                      "logo": "https://cdn.pixelbin.io/v2/falling-surf-7c8bb8/fyndnp/wrkr/testz0/misc/default-assets/original/UPI.png"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorCodeDetails"
+                },
+                "example": {
+                  "success": false,
+                  "data": {
+                    "status": "failed"
+                  },
+                  "message": "Invalid UPI. Please enter valid UPI."
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Beneficiary"
+        ]
+      }
+    },
     "/service/application/rewards/v1.0/offers/{name}/": {
       "get": {
         "description": "Retrieves detailed information about an offer by its name.",
@@ -39888,7 +40337,7 @@
           "gst_charges": {
             "type": "number",
             "format": "float",
-            "description": "GST charges applied on cart."
+            "description": "GST charges applied on cart"
           },
           "mrp_total": {
             "type": "number",
@@ -55878,6 +56327,28 @@
         },
         "description": "An object containing identification details for the item."
       },
+      "TaxComponent": {
+        "type": "object",
+        "description": "Schema for Tax Component.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of tax component."
+          },
+          "rate": {
+            "type": "number",
+            "description": "Applied tax rate."
+          },
+          "tax_amount": {
+            "type": "number",
+            "description": "Tax Amount."
+          },
+          "taxable_amount": {
+            "type": "number",
+            "description": "Taxable Amount (Amount Without Tax)."
+          }
+        }
+      },
       "FinancialBreakup": {
         "type": "object",
         "properties": {
@@ -55992,6 +56463,13 @@
           "amount_to_be_collected": {
             "type": "number",
             "description": "The total amount that needs to be collected from the customer."
+          },
+          "taxes": {
+            "type": "array",
+            "description": "Applied Tax Components",
+            "items": {
+              "$ref": "#/components/schemas/TaxComponent"
+            }
           }
         },
         "description": "Financial breakup object."
@@ -59693,7 +60171,7 @@
         "properties": {
           "delights": {
             "type": "boolean",
-            "description": "True if  beneficiary to be added by delights or False if by User."
+            "description": "[Deprecated] Indicates if the beneficiary was added by Delights (true) or by the User (false). This field will be removed in future releases."
           },
           "shipment_id": {
             "type": "string",
@@ -59746,7 +60224,7 @@
           },
           "message": {
             "type": "string",
-            "description": "Response message."
+            "description": "Message confirming the result of the beneficiary addition."
           }
         },
         "required": [
@@ -61798,6 +62276,217 @@
           "is_eligible",
           "message"
         ]
+      },
+      "RefundBeneficiaries": {
+        "description": "Contains lists of beneficiary accounts categorized by transfer mode.",
+        "properties": {
+          "upi": {
+            "type": "array",
+            "description": "List of UPI beneficiary account details.",
+            "items": {
+              "$ref": "#/components/schemas/UPIBeneficiary"
+            }
+          },
+          "bank": {
+            "type": "array",
+            "description": "List of bank beneficiary account details.",
+            "items": {
+              "$ref": "#/components/schemas/BankBeneficiary"
+            }
+          }
+        }
+      },
+      "UPIBeneficiary": {
+        "type": "object",
+        "properties": {
+          "is_active": {
+            "type": "boolean",
+            "description": "Indicates if the UPI beneficiary is currently active."
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "Indicates if the UPI beneficiary has been verified."
+          },
+          "transfer_mode": {
+            "type": "string",
+            "description": "Mode of transfer, should be \"upi\" for UPI beneficiaries.",
+            "example": "upi"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Display name shown for the beneficiary."
+          },
+          "vpa_address": {
+            "type": "string",
+            "description": "UPI Virtual Payment Address (e.g., name@bank)."
+          },
+          "customer_name": {
+            "type": "string",
+            "description": "Name of the customer associated with the UPI ID."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique ID associated with the beneficiary."
+          },
+          "logo": {
+            "type": "string",
+            "description": "URL logo image."
+          }
+        }
+      },
+      "BankBeneficiary": {
+        "type": "object",
+        "properties": {
+          "ifsc_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "IFSC code of the beneficiary’s bank."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Indicates if the bank beneficiary is currently active."
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "Indicates if the bank beneficiary has been verified."
+          },
+          "transfer_mode": {
+            "type": "string",
+            "description": "Mode of transfer, should be \"bank\" for bank beneficiaries.",
+            "example": "bank"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Display name shown for the beneficiary."
+          },
+          "account_holder": {
+            "type": "string",
+            "description": "Name of the account holder."
+          },
+          "logo": {
+            "type": "string",
+            "description": "URL of the bank logo image."
+          },
+          "account_no": {
+            "type": "string",
+            "description": "Masked bank account number."
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique ID associated with the beneficiary."
+          }
+        }
+      },
+      "BeneficiaryDetails": {
+        "type": "object",
+        "description": "Beneficiary details such as account holder, account number, IFSC code, and UPI ID.",
+        "properties": {
+          "account_holder": {
+            "type": "string",
+            "description": "The name of the account holder.",
+            "example": "JOHN DOE"
+          },
+          "account_no": {
+            "type": "string",
+            "description": "The account number of the beneficiary.",
+            "example": "11388108022659"
+          },
+          "ifsc_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "The IFSC code of the beneficiary's bank branch.",
+            "example": "ICIC0000009"
+          },
+          "upi": {
+            "type": "string",
+            "description": "The UPI ID of the beneficiary.",
+            "example": "success@upi"
+          }
+        }
+      },
+      "AddBeneficiaryRequestDetails": {
+        "type": "object",
+        "description": "Request body for adding a beneficiary to the system.",
+        "properties": {
+          "details": {
+            "$ref": "#/components/schemas/BeneficiaryDetails"
+          },
+          "order_id": {
+            "type": "string",
+            "description": "The order ID associated with the transaction.",
+            "example": "FY67D0489E68989666B7"
+          },
+          "shipment_id": {
+            "type": "string",
+            "description": "The shipment ID associated with the transaction.",
+            "example": 17001292715841217000
+          }
+        }
+      },
+      "AddBeneficiaryResponseDetails": {
+        "type": "object",
+        "description": "Response body after successfully adding a beneficiary.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message confirming the result of the beneficiary addition.",
+            "example": "Account successfully created"
+          },
+          "is_verified": {
+            "type": "boolean",
+            "description": "Flag indicating whether the beneficiary is verified.",
+            "example": true
+          },
+          "id": {
+            "type": "string",
+            "description": "The unique ID assigned to the newly added beneficiary.",
+            "example": "V2fc4XjiqJynRpXBHFpP693kVMvNMorElAvU7tWfTok="
+          },
+          "account_no": {
+            "type": "string",
+            "description": "The masked account number of the newly added beneficiary.",
+            "example": "XXXX-XXXX-2659"
+          },
+          "account_holder": {
+            "type": "string",
+            "description": "The account holder's name for the newly added beneficiary.",
+            "example": "JOHN DOE"
+          },
+          "bank_name": {
+            "type": "string",
+            "description": "The bank name associated with the beneficiary's account.",
+            "example": "ICICI Bank"
+          },
+          "upi": {
+            "type": "string",
+            "description": "The UPI id associated with the beneficiary's account.",
+            "example": "success@upi"
+          },
+          "logo": {
+            "type": "string",
+            "description": "The logo of the beneficiary's bank."
+          }
+        }
+      },
+      "DeleteBeneficiary": {
+        "type": "object",
+        "properties": {
+          "beneficiary_id": {
+            "type": "string",
+            "description": "The unique ID of the beneficiary to be deleted",
+            "example": "WGfTdqKORZ9fAjvUpa5BVg=="
+          }
+        }
+      },
+      "DeleteBeneficiaryDetails": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Message confirming the result of the deletion operation",
+            "example": "Beneficiary successfully deleted"
+          }
+        }
       },
       "RewardsArticle": {
         "type": "object",
@@ -67405,6 +68094,14 @@
           "presigned_type": "GET",
           "shipment_id": "17291513844841775952",
           "presigned_url": ""
+        }
+      },
+      "TaxComponent": {
+        "value": {
+          "name": "gst",
+          "taxable_amount": 150,
+          "rate": 18,
+          "tax_amount": 27
         }
       },
       "CatalogueOrderDetails": {
