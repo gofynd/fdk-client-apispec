@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Application Side APIs v2.11.0",
-    "version": "3.17.0",
+    "title": "Fynd Platform's Application Side APIs v2.11.1",
+    "version": "3.17.1",
     "description": "Fynd Platform's Application Side APIs"
   },
   "openapi": "3.0.2",
@@ -10849,6 +10849,104 @@
         ]
       }
     },
+    "/service/application/cart/v1.0/eligible-offer-products": {
+      "get": {
+        "summary": "getProductsByOfferId | List eligible offer products",
+        "description": "List all products eligible for the given offer id.",
+        "tags": [
+          "Cart"
+        ],
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The unique identifier of the offer"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "Number of items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns list of eligible products with pagination",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EligibleProductsResult"
+                },
+                "example": {
+                  "success": true,
+                  "message": "",
+                  "items": [
+                    {
+                      "product_slug": "cotton-tshirt-blue",
+                      "uid": 123456
+                    },
+                    {
+                      "product_slug": "denim-jeans-slim-fit",
+                      "uid": 123457
+                    },
+                    {
+                      "product_slug": "sports-shoes-running",
+                      "uid": 123458
+                    }
+                  ],
+                  "page": {
+                    "current": 1,
+                    "has_previous": false,
+                    "has_next": false,
+                    "size": 20
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Offer is not available for the given offer id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EligibleProductsResult"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Offer is not eligible for this user",
+                  "items": [],
+                  "page": {
+                    "current": 1,
+                    "has_previous": false,
+                    "has_next": false,
+                    "size": 20
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Offer"
+        ]
+      }
+    },
     "/service/application/catalog/v1.0/products/{slug}/": {
       "get": {
         "summary": "getProductDetailBySlug | Get a product",
@@ -13944,17 +14042,10 @@
           {
             "in": "query",
             "name": "sort_on",
-            "description": "The order in which the list of products should be sorted, e.g. popularity, price, latest and discount, in either ascending or descending order. See the supported values below.",
+            "description": "The order in which the list of products should be sorted. Supported values include latest, popular, price_asc, price_dsc, discount_asc, discount_dsc. Custom sort keys configured via listing configuration (e.g., best_selling) are also supported for cohort-based sorting.",
             "schema": {
               "type": "string",
-              "enum": [
-                "latest",
-                "popular",
-                "price_asc",
-                "price_dsc",
-                "discount_asc",
-                "discount_dsc"
-              ]
+              "x-not-enum": true
             },
             "required": false,
             "examples": {
@@ -18104,17 +18195,10 @@
           {
             "in": "query",
             "name": "sort_on",
-            "description": "The order in which the list of products should be sorted, e.g. popularity, price, latest and discount, in either ascending or descending order. See the supported values below.",
+            "description": "The order in which the list of products should be sorted. Supported values include latest, popular, price_asc, price_dsc, discount_asc, discount_dsc. Custom sort keys configured via listing configuration (e.g., best_selling) are also supported for cohort-based sorting.",
             "schema": {
               "type": "string",
-              "enum": [
-                "latest",
-                "popular",
-                "price_asc",
-                "price_dsc",
-                "discount_asc",
-                "discount_dsc"
-              ]
+              "x-not-enum": true
             },
             "required": false,
             "examples": {
@@ -20805,6 +20889,59 @@
         ]
       }
     },
+    "/service/application/catalog/v1.0/available-countries/": {
+      "get": {
+        "summary": "listCountryCurrencyMappings | List country to currency mapping",
+        "description": "List all country-to-currencies mappings configured during the Price Factory setup for given application",
+        "responses": {
+          "200": {
+            "description": "Success. Returns all avaialble country-to-currencies mappings for given application.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableCountrySchema"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "items": [
+                        {
+                          "name": "India",
+                          "iso2": "IN",
+                          "iso3": "INA",
+                          "uid": "67c7e2fbda6c90811a2baa88",
+                          "is_default": true,
+                          "currencies": [
+                            {
+                              "code": "INR",
+                              "name": "Indian Rupee",
+                              "symbol": "₹",
+                              "is_default": true
+                            },
+                            {
+                              "code": "ARS",
+                              "name": "Argentine Peso",
+                              "symbol": "AR$",
+                              "is_default": false
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Product"
+        ],
+        "tags": [
+          "Catalog"
+        ]
+      }
+    },
     "/service/application/communication/v1.0/consent": {
       "get": {
         "description": "Get the consent provided by the user for receiving communication.",
@@ -21614,6 +21751,20 @@
                         "order": {
                           "buy_again": true
                         },
+                        "security": {
+                          "domains": [
+                            {
+                              "host": "example.com",
+                              "url_scheme": "https"
+                            },
+                            {
+                              "host": "api.example.com",
+                              "url_scheme": "https"
+                            }
+                          ]
+                        },
+                        "price_strategy": "price_factory",
+                        "international": true,
                         "_id": "5e57643c986e4119c973df7d",
                         "app": "000000000000000000000004",
                         "created_at": "2020-02-27T06:39:56.088Z",
@@ -27673,6 +27824,28 @@
               "payment_options_success": {
                 "summary": "shipment_id",
                 "value": "12345"
+              }
+            }
+          },
+          {
+            "name": "fulfillment_option",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "List of fulfillment option slugs used to filter payment modes. A payment mode is included only if it is not explicitly disabled for any of the provided fulfillment options.",
+            "examples": {
+              "payment_options_success": {
+                "summary": "fulfillment_option",
+                "value": [
+                  "express-delivery",
+                  "fast-track",
+                  "self-pickup"
+                ]
               }
             }
           }
@@ -37320,6 +37493,23 @@
         },
         "description": "Loyalty points message data."
       },
+      "CurrencyValue": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "Currency code.",
+            "example": "INR"
+          },
+          "value": {
+            "type": "number",
+            "format": "float",
+            "description": "Numeric amount value.",
+            "example": 100
+          }
+        },
+        "description": "Currency value information containing currency code and amount."
+      },
       "ChargesAmount": {
         "type": "object",
         "properties": {
@@ -37331,6 +37521,12 @@
           "currency": {
             "type": "string",
             "description": "This is destination currency of value."
+          },
+          "base_currency": {
+            "$ref": "#/components/schemas/CurrencyValue"
+          },
+          "ordering_currency": {
+            "$ref": "#/components/schemas/CurrencyValue"
           }
         },
         "description": "Charges amount data which deffently denotes amount of charges in seller currency and customer currency."
@@ -38820,6 +39016,69 @@
           }
         },
         "description": "Pagination schema for get coupon list available on cart."
+      },
+      "EligibleProductItem": {
+        "type": "object",
+        "properties": {
+          "product_slug": {
+            "type": "string",
+            "description": "URL-friendly identifier for the product"
+          },
+          "uid": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Unique identifier of the product"
+          }
+        },
+        "description": "Product item eligible for an offer"
+      },
+      "PageInfo": {
+        "type": "object",
+        "properties": {
+          "current": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Current page number"
+          },
+          "has_previous": {
+            "type": "boolean",
+            "description": "Whether previous page is available"
+          },
+          "has_next": {
+            "type": "boolean",
+            "description": "Whether next page is available"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Number of items per page"
+          }
+        },
+        "description": "Pagination information for the response"
+      },
+      "EligibleProductsResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful"
+          },
+          "message": {
+            "type": "string",
+            "description": "Response message"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EligibleProductItem"
+            },
+            "description": "List of eligible products"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageInfo"
+          }
+        },
+        "description": "Response schema for eligible offer products list"
       },
       "DiscountRules": {
         "type": "object",
@@ -41364,6 +41623,146 @@
           "message",
           "field"
         ]
+      },
+      "ApplyOfferSchema": {
+        "type": "object",
+        "required": [
+          "offer_code"
+        ],
+        "properties": {
+          "offer_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "Offer code to be applied."
+          }
+        }
+      },
+      "OfferListItem": {
+        "type": "object",
+        "description": "Offer list item schema which includes offer data.",
+        "required": [
+          "mode",
+          "offer_text",
+          "id",
+          "code",
+          "name",
+          "is_applicable",
+          "is_applied",
+          "type",
+          "start_date",
+          "end_date"
+        ],
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Mode of the offer (e.g., coupon, promotion)",
+            "enum": [
+              "coupon",
+              "promotion"
+            ]
+          },
+          "offer_text": {
+            "type": "string",
+            "description": "Offer text to display for the customer"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the offer"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the offer"
+          },
+          "code": {
+            "type": "string",
+            "description": "offer code if applicable"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name/title of the offer"
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of offer i.e amount, percentage, etc",
+            "enum": [
+              "amount",
+              "bogo",
+              "bundle_amount_percentage",
+              "bundle_price_amount",
+              "bundle_price_percentage",
+              "contract_price",
+              "fixed_price",
+              "free_gift_items",
+              "free_item_discount_absolute",
+              "item_based_discount",
+              "ladder_price",
+              "percentage",
+              "shipping_price",
+              "fixed_unit_price",
+              "cashback",
+              "free_items",
+              "free_non_sellable_items",
+              "external_price_adjustment_discount",
+              "custom"
+            ]
+          },
+          "offer_label": {
+            "type": "string",
+            "description": "Short label or subtitle to display for the offer"
+          },
+          "max_discount_value": {
+            "type": "number",
+            "format": "float",
+            "description": "Maximum discount allowed for this offer. Set to 0 when no maximum cap is defined."
+          },
+          "applied_discount_amount": {
+            "type": "number",
+            "format": "float",
+            "description": "Actual discount applied to the order. This value is always less than or equal to max_discount_value when a max cap is defined. May be 0 in scenarios such as free gift offers or when no monetary discount is applied."
+          },
+          "is_applicable": {
+            "type": "boolean",
+            "description": "Indicates whether the offer is applicable to the current cart or product, depending on whether the data was fetched using a cart ID or a product slug."
+          },
+          "is_applied": {
+            "type": "boolean",
+            "description": "Indicates whether the offer is already applied on cart"
+          },
+          "is_bank_offer": {
+            "type": "boolean",
+            "description": "Flag indicating if offer is specific to bank/payment mode"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offer start time in ISO 8601 (UTC Z) format"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Offer end time in ISO 8601 (UTC Z) format"
+          }
+        }
+      },
+      "GetOfferResult": {
+        "type": "object",
+        "description": "Get offer result schema which includes offers and pageination information.",
+        "required": [
+          "available_offers",
+          "page"
+        ],
+        "properties": {
+          "available_offers": {
+            "type": "array",
+            "description": "List of all available offers based on request parameters",
+            "items": {
+              "$ref": "#/components/schemas/OfferListItem"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageCoupon"
+          }
+        }
       },
       "ProductDetailCustomOrder": {
         "type": "object",
@@ -45860,6 +46259,71 @@
           }
         }
       },
+      "CurrenciesSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Currency code"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the currency"
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Symbol of the currency"
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Indicates if this is the default currency for the country"
+          }
+        }
+      },
+      "CountryCurrencyMapping": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the country"
+          },
+          "iso2": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 code of the country"
+          },
+          "iso3": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-3 code of the country"
+          },
+          "uid": {
+            "type": "string",
+            "description": "Unique identifier for the country"
+          },
+          "is_default": {
+            "type": "boolean",
+            "description": "Indicates if this is the default country for the company"
+          },
+          "currencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CurrenciesSchema"
+            },
+            "description": "List of currencies mapped with country"
+          }
+        }
+      },
+      "AvailableCountrySchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountryCurrencyMapping"
+            },
+            "description": "List all country-to-currencies mappings configured during the Price Factory setup"
+          }
+        }
+      },
       "ApplicationResponseSchema": {
         "type": "object",
         "properties": {
@@ -47375,11 +47839,26 @@
           "order": {
             "$ref": "#/components/schemas/OrderFeature"
           },
+          "security": {
+            "$ref": "#/components/schemas/SecurityFeature"
+          },
           "fulfillment_option": {
             "$ref": "#/components/schemas/FulfillmentOption"
           },
           "delivery_strategy": {
             "$ref": "#/components/schemas/DeliveryStrategy"
+          },
+          "price_strategy": {
+            "type": "string",
+            "description": "Indicates the current price strategy for products: store_prices (default) applies store-level pricing, while price_factory applies prices set in the price factory.",
+            "enum": [
+              "store_prices",
+              "price_factory"
+            ]
+          },
+          "international": {
+            "type": "boolean",
+            "description": "Indicates whether international price factory enabled or not in an application."
           },
           "_id": {
             "type": "string",
@@ -47644,6 +48123,41 @@
           }
         },
         "description": "Configuration options for order-related features, such as enabling the 'buy again' option."
+      },
+      "SecurityFeature": {
+        "type": "object",
+        "properties": {
+          "domains": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AllowedDomain"
+            },
+            "description": "List of allowed domains for security restrictions."
+          }
+        },
+        "description": "Configuration for security-related features of the sales channel."
+      },
+      "AllowedDomain": {
+        "type": "object",
+        "description": "Represents a domain that is permitted for security restrictions, specifying the host and URL scheme.",
+        "required": [
+          "host"
+        ],
+        "properties": {
+          "host": {
+            "type": "string",
+            "description": "The host URL for the allowed domain."
+          },
+          "url_scheme": {
+            "type": "string",
+            "enum": [
+              "http",
+              "https"
+            ],
+            "default": "https",
+            "description": "The protocol/scheme to use for the domain. Default is https."
+          }
+        }
       },
       "DeliveryStrategy": {
         "type": "object",
@@ -50675,7 +51189,17 @@
       },
       "ResourcePayload": {
         "type": "object",
+        "required": [
+          "resource_id"
+        ],
         "properties": {
+          "resource_id": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of resource IDs to fetch translations for."
+          },
           "payload": {
             "type": "array",
             "items": {
@@ -50683,6 +51207,48 @@
               "additionalProperties": true
             },
             "description": "Array of resource data objects containing content to be translated."
+          }
+        }
+      },
+      "OrderTranslationRequestSchema": {
+        "type": "object",
+        "description": "Request schema for order or shipment translations.",
+        "required": [
+          "payload_type",
+          "payload"
+        ],
+        "properties": {
+          "payload_type": {
+            "type": "string",
+            "description": "Type of payload structure",
+            "enum": [
+              "order",
+              "shipment"
+            ],
+            "example": "order"
+          },
+          "payload": {
+            "description": "Order or shipment data structure containing product items to be translated",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "TranslationResult": {
+        "type": "object",
+        "description": "Response container for translated order or shipment data in array format for storefront display. This response format returns localized product information (names, brands, categories) based on the requested locale, enabling multilingual e-commerce experiences.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "Array of translated items matching the original request structure (order or shipment), with all product information localized to the target language. Returns empty array if no translations are available.",
+            "items": {
+              "type": "object",
+              "description": "Individual translated item containing localized product information",
+              "additionalProperties": true
+            }
           }
         }
       },
@@ -55292,6 +55858,17 @@
             "type": "string",
             "description": "Descriptive status of the refund (e.g., refund_acknowledged, refund_approved)."
           },
+          "operational_status": {
+            "type": "string",
+            "description": "Display Status for the storefront its pending when refund is in progress and completed when refund completed for a mode"
+          },
+          "transaction_info": {
+            "type": "array",
+            "description": "Refund Status Transaction Info for the payment mode",
+            "items": {
+              "$ref": "#/components/schemas/RefundTransactionInfo"
+            }
+          },
           "created_ts": {
             "type": "string",
             "description": "Timestamp when the refund status was created."
@@ -55332,6 +55909,25 @@
             "example": "success@upi"
           }
         }
+      },
+      "RefundTransactionInfo": {
+        "type": "object",
+        "description": "Represents transaction-level identifiers associated with a refund of a payment mode/Methods.",
+        "properties": {
+          "rrn": {
+            "type": "string",
+            "description": "Refund Reference Number (RRN) generated for the refund transaction."
+          },
+          "utr": {
+            "type": "string",
+            "description": "Unique Transaction Reference (UTR) for the refund."
+          },
+          "mode": {
+            "type": "string",
+            "description": "Payment mode for which the refund was processed. Please refer for detailed <a href='/commerce/references/payment-mode/'>Payment Mode.</a>"
+          }
+        },
+        "additionalProperties": true
       },
       "RefundModeData": {
         "type": "object",
