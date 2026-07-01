@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Application Side APIs v2.12.2",
-    "version": "3.27.0",
+    "title": "Fynd Platform's Application Side APIs v2.12.3",
+    "version": "3.28.0",
     "description": "Fynd Platform's Application Side APIs"
   },
   "openapi": "3.0.2",
@@ -9068,6 +9068,10 @@
               "example": {
                 "checkout_mode": "self",
                 "gstin": "27AAAAA0939A1AA",
+                "ship_to_gst_details": {
+                  "gstin": "27AAPFU0939F1ZV",
+                  "trade_name": "XYZ Traders"
+                },
                 "custom_cart_meta": {
                   "test": "test"
                 },
@@ -22469,6 +22473,23 @@
                 "value": "Fynd"
               }
             }
+          },
+          {
+            "name": "app_permissions",
+            "in": "query",
+            "description": "App permissions.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "400": {
+                "value": "customer"
+              },
+              "success": {
+                "value": "customer"
+              }
+            }
           }
         ],
         "responses": {
@@ -28875,6 +28896,20 @@
                 "value": "%7B%22first_name%22:%22Fynd%22,%22last_name%22:%22Dummy%22,%22mobile%22:%229999999999%22,%22email%22:%22test@example.com"
               }
             }
+          },
+          {
+            "name": "display_split",
+            "in": "query",
+            "description": "Display Split Payment Option or not.",
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "payment_pos_success": {
+                "summary": "display_split",
+                "value": false
+              }
+            }
           }
         ],
         "responses": {
@@ -32369,6 +32404,76 @@
         },
         "x-groups": [
           "Beneficiary"
+        ]
+      }
+    },
+    "/service/application/payment/v1.0/orders/{order_id}/transactions": {
+      "get": {
+        "summary": "getOrderTransactions | List all transactions for an order",
+        "description": "Returns all payment transactions for the given order ID, ordered by creation timestamp ascending. Each entry includes merchant transaction ID, payment mode name, logo, amount, latest status, and created_on.",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "description": "Merchant order ID. Example: FY692D2AC45171FB895B",
+            "schema": {
+              "type": "string",
+              "example": "FY692D2AC45171FB895B"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions for the order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderTransactionList"
+                },
+                "examples": {
+                  "order_transactions_success": {
+                    "value": {
+                      "success": true,
+                      "items": [
+                        {
+                          "transaction_id": "TR692D2BC451FA77D8GF",
+                          "payment_mode": "UPI",
+                          "logo": "https://cdn.fynd.com/payment/upi_small.png",
+                          "amount": 499,
+                          "status": "complete",
+                          "created_on": "2024-01-15T10:30:00Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. See the error object in the response body to know the exact reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpErrorCodeDetails"
+                },
+                "example": {
+                  "success": false,
+                  "error": {
+                    "code": "BAD_REQUEST_ERROR",
+                    "description": "Invalid order_id."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Payment"
         ]
       }
     },
@@ -38582,6 +38687,12 @@
           "title": {
             "type": "string",
             "description": "Unique title for loyalty program applicable."
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "description": "Free-form metadata returned by the loyalty engine in its response. Structure varies; may include rule details, campaign info, or any additional fields Engage sends back.",
+            "additionalProperties": true
           }
         },
         "description": "Engage points data for the user cart."
@@ -38852,6 +38963,9 @@
             "type": "string",
             "description": "GSTIN added in user cart."
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "restrict_checkout": {
             "type": "boolean",
             "description": "Restrict checkout flag to restrict the checkout process."
@@ -38884,6 +38998,12 @@
             "type": "object",
             "additionalProperties": true,
             "description": "Custom meta details added cart checkout API payload"
+          },
+          "loyalty_meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Free-form metadata stored against the loyalty redemption for this cart. Contains fields passed via the applyLoyaltyPoints meta input (e.g. points, redeem_rule_id) and is forwarded to the loyalty engine on each cart calculation."
           },
           "alternate_pickup_person": {
             "$ref": "#/components/schemas/AlternatePickupPerson"
@@ -39627,12 +39747,17 @@
           "redeem_points": {
             "type": "boolean",
             "description": "Marks if engage points are to be redeemed for the given cart."
+          },
+          "meta": {
+            "type": "object",
+            "description": "Free-form metadata forwarded to the loyalty engine. Any field can be passed (e.g. points, redeem_rule_id). Engage reads from this dict when processing redemption.",
+            "additionalProperties": true
           }
         },
         "required": [
           "redeem_points"
         ],
-        "description": "loyaltys point request details."
+        "description": "Loyalty point request details."
       },
       "GeoLocation": {
         "type": "object",
@@ -40056,6 +40181,9 @@
             "type": "string",
             "description": "GSTIN number added in cart."
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "restrict_checkout": {
             "type": "boolean",
             "description": "Restrict checkout flag to restrict the checkout process."
@@ -40440,6 +40568,9 @@
             "type": "string",
             "description": "GSTIN number added in cart."
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "restrict_checkout": {
             "type": "boolean",
             "description": "Restrict checkout flag to restrict the checkout process."
@@ -40548,6 +40679,23 @@
         },
         "description": "Article level gift details which includes article id."
       },
+      "ShipToGstDetails": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "gstin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ship-to GSTIN for bill-to ship-to e-way bill generation."
+          },
+          "trade_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ship-to trade name for bill-to ship-to e-way bill generation."
+          }
+        },
+        "description": "Ship-to GST and trade name details used for bill-to ship-to e-way bill generation."
+      },
       "CartMetaCreation": {
         "type": "object",
         "properties": {
@@ -40578,6 +40726,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN number to be added in user cart."
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "custom_cart_meta": {
             "type": "object",
@@ -40725,6 +40876,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN added in user cart."
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "shared_cart_details": {
             "$ref": "#/components/schemas/SharedCartDetails"
@@ -42209,7 +42363,9 @@
               "m",
               "cm",
               "nos",
-              "pack"
+              "pack",
+              "ea",
+              "set"
             ],
             "description": "The unit of measurement used for the net quantity of the product."
           },
@@ -48146,6 +48302,27 @@
           }
         }
       },
+      "BuyBoxFeature": {
+        "type": "object",
+        "properties": {
+          "show_name": {
+            "type": "boolean",
+            "description": "Shows whether the name should be displayed in the buybox.",
+            "default": true
+          },
+          "enable_selection": {
+            "type": "boolean",
+            "description": "Indicates if selection is enabled in the buybox.",
+            "default": true
+          },
+          "is_seller_buybox_enabled": {
+            "type": "boolean",
+            "description": "Determines if the seller buybox is enabled.",
+            "default": false
+          }
+        },
+        "description": "Configuration options for the BuyBox feature, allowing control over visibility and selection settings."
+      },
       "AppFeature": {
         "type": "object",
         "properties": {
@@ -48226,6 +48403,9 @@
             "type": "integer",
             "format": "int32",
             "description": "Version key for tracking revisions. Default value is zero."
+          },
+          "buybox": {
+            "$ref": "#/components/schemas/BuyBoxFeature"
           }
         },
         "description": "Configuration for various features of the application."
@@ -62471,6 +62651,65 @@
             "type": "string",
             "description": "Message confirming the result of the deletion operation",
             "example": "Beneficiary successfully deleted"
+          }
+        }
+      },
+      "OrderTransactionList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful.",
+            "example": true
+          },
+          "items": {
+            "type": "array",
+            "description": "List of transactions ordered by created_on ascending.",
+            "example": [],
+            "items": {
+              "$ref": "#/components/schemas/OrderTransactionItem"
+            }
+          }
+        }
+      },
+      "OrderTransactionItem": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "description": "Merchant transaction ID.",
+            "example": "TR692D2BC451FA77D8GF"
+          },
+          "payment_mode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment mode name (e.g. UPI, Card, COD).",
+            "example": "UPI"
+          },
+          "logo": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment mode logo URL. Returns the small logo if available, falls back to large logo. Null if no logo is configured.",
+            "example": "https://cdn.fynd.com/payment/upi_small.png"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true,
+            "description": "Transaction amount.",
+            "example": 499
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latest transaction status (e.g. complete, pending, failed, cancelled).",
+            "example": "complete"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction creation timestamp (ISO 8601).",
+            "example": "2024-01-15T10:30:00Z"
           }
         }
       },

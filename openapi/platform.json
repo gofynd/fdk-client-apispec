@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Platform Side APIs v2.12.2",
-    "version": "3.27.0",
+    "title": "Fynd Platform's Platform Side APIs v2.12.3",
+    "version": "3.28.0",
     "description": "Fynd Platform's Platform Side APIs"
   },
   "openapi": "3.0.2",
@@ -15456,6 +15456,10 @@
               "example": {
                 "checkout_mode": "self",
                 "gstin": "27AAPFU0939F1ZV",
+                "ship_to_gst_details": {
+                  "gstin": "27AAPFU0939F1ZV",
+                  "trade_name": "XYZ Traders"
+                },
                 "comment": "Leave it with neighbour",
                 "pan_no": "AAPFU0939F",
                 "gift_details": {
@@ -33545,6 +33549,7 @@
                         "store_id": 117098,
                         "price_marked": 800,
                         "price_effective": 800,
+                        "price_cost": 7.99,
                         "expiration_date": "9998-01-30T18:29:00.000Z",
                         "total_quantity": 10
                       }
@@ -33702,6 +33707,7 @@
                         "store_id": 117098,
                         "price_marked": 800,
                         "price_effective": 800,
+                        "price_cost": 7.99,
                         "expiration_date": "9998-01-30T18:29:00.000Z",
                         "total_quantity": 10
                       }
@@ -64872,6 +64878,144 @@
         ]
       }
     },
+    "/service/platform/logistics/v2.0/company/{company_id}/application/{application_id}/zones/bulk/products/patch": {
+      "post": {
+        "summary": "patchZoneProductsAtomic | Atomically add or remove products on zones (concurrency-safe)",
+        "description": "Synchronously adds or removes products on one or more zones. Each item is applied with an atomic MongoDB array operator (`$addToSet` for add, `$pull` for remove) rather than a read-modify-write of the whole product list, so concurrent writes to the same zone never lose each other's changes. `product_type` must match the existing zone's product type. Product ids are not validated against the catalog (this is a synchronous API; callers send already-known ids). Returns a per-item status and a summary; per-item failures (e.g. zone not found, product type mismatch) do not fail the whole request.",
+        "tags": [
+          "Serviceability"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZoneProductsAtomicPatchDetails"
+              },
+              "examples": {
+                "Zone Products Atomic Patch": {
+                  "value": {
+                    "items": [
+                      {
+                        "zone_id": "65f2f36dcf9ffae64b112646",
+                        "product_type": "item_id",
+                        "values": [
+                          7501234,
+                          7501235
+                        ],
+                        "action": "add"
+                      },
+                      {
+                        "zone_id": "65f2f36dcf9ffae64b112646",
+                        "product_type": "tag",
+                        "values": [
+                          "clearance"
+                        ],
+                        "action": "remove"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "description": "The unique identifier for the company.",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "examples": {
+              "Zone Products Atomic Patch": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "in": "path",
+            "name": "application_id",
+            "description": "A `application_id` is a unique identifier for a particular sale channel.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "examples": {
+              "Zone Products Atomic Patch": {
+                "value": "64aec5a93a079bd328537835"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-item results and summary of the atomic products patch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneProductsAtomicPatchResult"
+                },
+                "examples": {
+                  "Zone Products Atomic Patch": {
+                    "value": {
+                      "items": [
+                        {
+                          "zone_id": "65f2f36dcf9ffae64b112646",
+                          "product_type": "item_id",
+                          "action": "add",
+                          "status": "success",
+                          "values_count": 42
+                        },
+                        {
+                          "zone_id": "65f2f36dcf9ffae64b112646",
+                          "product_type": "tag",
+                          "action": "remove",
+                          "status": "success",
+                          "values_count": 5
+                        }
+                      ],
+                      "summary": {
+                        "total": 2,
+                        "success": 2,
+                        "failed": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request body failed schema validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommonErrorResult"
+                },
+                "examples": {
+                  "Zone Products Atomic Patch Validation Error": {
+                    "value": {
+                      "error": [
+                        {
+                          "type": "ZoneNotFoundError",
+                          "value": "items",
+                          "message": "Missing data for required field."
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Delivery Zone"
+        ]
+      }
+    },
     "/service/platform/order-manage/v1.0/company/{company_id}/store/reassign-internal": {
       "post": {
         "description": "Reassign the shipment to a another location and update its status to 'Store Reassigned.'",
@@ -75207,6 +75351,123 @@
         ]
       }
     },
+    "/service/platform/payment/v1.0/company/{company_id}/application/{application_id}/payment/order/meta": {
+      "put": {
+        "summary": "updateOrderMeta | Update order metadata",
+        "description": "Update metadata associated with a payment order. Use this to set or update PAN (Permanent Account Number) for an order.",
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "description": "Company Id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "The unique identifier of the order (merchant_order_id).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "pan_no: Valid Indian PAN (5 letters, 4 digits, 1 letter). Required when updating order meta for PAN. Example: AAAAA9999A.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderMetaUpdate"
+              },
+              "example": {
+                "pan_no": "AAAAA9999A"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns a message indicating the success of order meta updation as shown below.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderMetaResult"
+                },
+                "example": {
+                  "message": "order meta updated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid order_id / pan_no, order not found, order already completed, or invalid PAN format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderMetaErrorResult"
+                },
+                "examples": {
+                  "missing_order_id": {
+                    "summary": "Missing order_id",
+                    "value": {
+                      "success": false,
+                      "message": "order_id is required."
+                    }
+                  },
+                  "missing_pan_no": {
+                    "summary": "Missing pan_no",
+                    "value": {
+                      "success": false,
+                      "message": "pan_no is required."
+                    }
+                  },
+                  "invalid_pan": {
+                    "summary": "Invalid PAN format",
+                    "value": {
+                      "success": false,
+                      "message": "Invalid PAN format. PAN must be 5 letters, 4 digits, 1 letter (e.g. AAAAA9999A)."
+                    }
+                  },
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "success": false,
+                      "message": "Order with id FY123 not found."
+                    }
+                  },
+                  "order_completed": {
+                    "summary": "Payment already done",
+                    "value": {
+                      "success": false,
+                      "message": "Payment is already done for the order: FY123."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Payment",
+          "Order"
+        ],
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
     "/service/platform/payment/v1.0/company/{company_id}/application/{application_id}/payment/validate/customer-credits": {
       "post": {
         "summary": "validateCustomerAndCreditSummary | Verify payment customer and show credit summary",
@@ -75444,6 +75705,96 @@
         "tags": [
           "Payment"
         ]
+      }
+    },
+    "/service/platform/payment/v1.0/company/{company_id}/application/{application_id}/orders/{order_id}/transactions": {
+      "get": {
+        "summary": "getOrderTransactions | List all transactions for an order",
+        "x-groups": [
+          "Payment"
+        ],
+        "description": "Returns all payment transactions associated with the given order ID, ordered by creation timestamp ascending. Each entry includes the merchant transaction ID, payment mode name, logo URL (small, falling back to large), transaction amount, latest status, and creation timestamp.",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique numeric identifier of the company (seller).",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the sales channel (application).",
+            "schema": {
+              "type": "string",
+              "example": "000000000000000000000001"
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "description": "Merchant order ID (e.g. FY692D2AC45171FB895B).",
+            "schema": {
+              "type": "string",
+              "example": "FY692D2AC45171FB895B"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions for the order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderTransactionList"
+                },
+                "example": {
+                  "success": true,
+                  "items": [
+                    {
+                      "transaction_id": "TR692D2BC451FA77D8GF",
+                      "payment_mode": "UPI",
+                      "logo": "https://cdn.fynd.com/payment/upi_small.png",
+                      "amount": 499,
+                      "status": "complete",
+                      "created_on": "2024-01-15T10:30:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Returned when path parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid order_id."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/service/platform/share/v1.0/company/{company_id}/application/{application_id}/links/short-link/": {
@@ -82728,6 +83079,11 @@
           "redeem_points": {
             "type": "boolean",
             "description": "Marks if engage points are to be redeemed for the given cart."
+          },
+          "meta": {
+            "type": "object",
+            "description": "Free-form metadata forwarded to the loyalty engine. Any field can be passed (e.g. points, redeem_rule_id). Engage reads from this dict when processing redemption.",
+            "additionalProperties": true
           }
         },
         "required": [
@@ -86308,6 +86664,12 @@
             "type": "number",
             "format": "float",
             "description": "Engage discount amount applied on the cart as payment mode"
+          },
+          "meta": {
+            "type": "object",
+            "nullable": true,
+            "description": "Free-form metadata returned by the loyalty engine in its response. Structure varies; may include rule details, campaign info, or any additional fields Engage sends back.",
+            "additionalProperties": true
           }
         }
       },
@@ -88463,6 +88825,9 @@
             "type": "string",
             "description": "GSTIN added in user cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "applied_promo_details": {
             "type": "array",
             "description": "List of applied promotions data to cart which includes promotion id, promotion name, offer text, description, buy rules, discount rules and promotion type",
@@ -88478,6 +88843,12 @@
             "type": "object",
             "additionalProperties": true,
             "description": "Custom meta details added cart checkout API payload"
+          },
+          "loyalty_meta": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Free-form metadata stored against the loyalty redemption for this cart. Contains fields passed via the applyLoyaltyPoints meta input (e.g. points, redeem_rule_id) and is forwarded to the loyalty engine on each cart calculation."
           },
           "alternate_pickup_person": {
             "$ref": "#/components/schemas/PlatformAlternatePickupPerson"
@@ -89229,6 +89600,9 @@
             "type": "string",
             "description": "GSTIN added in user cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "custom_cart_meta": {
             "type": "object",
             "description": "Custom cart meta of user cart added via update cart meta API",
@@ -89435,6 +89809,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN added in user cart"
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "custom_cart_meta": {
             "type": "object",
@@ -90182,6 +90559,9 @@
             "type": "string",
             "description": "GSTIN number added in cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "applied_promo_details": {
             "type": "array",
             "description": "List of applied promotions data to cart which includes promotion id, promotion name, offer text, description, buy rules, discount rules and promotion type",
@@ -90253,6 +90633,23 @@
           "shipments"
         ]
       },
+      "ShipToGstDetails": {
+        "type": "object",
+        "nullable": true,
+        "description": "Ship-to GST and trade name details used for bill-to ship-to e-way bill generation.",
+        "properties": {
+          "gstin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ship-to GSTIN for bill-to ship-to e-way bill generation."
+          },
+          "trade_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ship-to trade name for bill-to ship-to e-way bill generation."
+          }
+        }
+      },
       "PlatformCartMetaCreation": {
         "type": "object",
         "description": "Cart meta request schema to update the cart meta detail like delivery slots, comment message, GSTIN and custom cart meta",
@@ -90260,6 +90657,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN number to be added in user cart"
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "pick_up_customer_details": {
             "type": "object",
@@ -90701,6 +91101,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN number added in cart"
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "cod_available": {
             "type": "boolean",
@@ -92538,6 +92941,61 @@
           },
           "page": {
             "$ref": "#/components/schemas/Page"
+          }
+        }
+      },
+      "InventoryTransaction": {
+        "description": "Optional audit transaction context for an inventory change. All fields are optional with no hard validation; the whole object is recorded in the audit-trail event.",
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "type": {
+            "description": "Reason category for the inventory change.",
+            "type": "string",
+            "example": "stock_transfer_in",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "reference_id": {
+            "description": "External transaction reference id (e.g. inbound / PO / transfer id).",
+            "type": "string",
+            "example": "INBO0001",
+            "x-not-enum": true
+          },
+          "reason": {
+            "description": "Free-text reason for the inventory change.",
+            "type": "string",
+            "example": "adding P0 for location xyz",
+            "x-not-enum": true
+          },
+          "source": {
+            "description": "Origin system of the change.",
+            "type": "string",
+            "example": "api",
+            "x-not-enum": true
+          },
+          "user_ref": {
+            "description": "Reference to the user who initiated the change.",
+            "type": "string",
+            "example": "user@example.com",
+            "x-not-enum": true
           }
         }
       },
@@ -99688,6 +100146,40 @@
           "user": {
             "type": "object",
             "additionalProperties": true
+          },
+          "transaction_type": {
+            "description": "Reason for the bulk inventory update. Recorded in the audit-trail event; per-row values on `sizes[].transaction_type` override this top-level value. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_bulk_update",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100237,6 +100729,40 @@
             "example": "TRACE123",
             "nullable": true,
             "type": "string"
+          },
+          "transaction_type": {
+            "description": "Reason for this row's inventory update. Recorded in the audit-trail event. Overrides the request-level `transaction_type` when both are present. Optional.",
+            "example": "manual_adjustment_bulk_update",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100309,6 +100835,11 @@
             "example": 10.99,
             "type": "number"
           },
+          "price_cost": {
+            "description": "The cost price of the article.",
+            "example": 7.99,
+            "type": "number"
+          },
           "seller_identifier": {
             "description": "The identifier of the seller.",
             "example": "SELLER123",
@@ -100367,6 +100898,40 @@
           "meta": {
             "type": "object",
             "additionalProperties": true
+          },
+          "transaction_type": {
+            "description": "Reason for this row's inventory update. Recorded in the audit-trail event. Overrides the request-level `transaction_type` when both are present. Optional.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100388,6 +100953,40 @@
               "$ref": "#/components/schemas/InvSize"
             },
             "type": "array"
+          },
+          "transaction_type": {
+            "description": "Reason for the inventory update. Recorded in the audit-trail event for the resulting article mutation. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100421,6 +101020,7 @@
                 "expiration_date": "2023-12-31T15:43:59.410Z",
                 "price_effective": 79.99,
                 "price_marked": 99.99,
+                "price_cost": 7.99,
                 "seller_identifier": "SELLER123",
                 "store_id": 456,
                 "tags": [
@@ -100436,6 +101036,40 @@
             },
             "maxItems": 50,
             "type": "array"
+          },
+          "transaction_type": {
+            "description": "Reason for the inventory update. Recorded in the audit-trail event for the resulting article mutation; per-row values on `payload[].transaction_type` override this top-level value. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -101505,7 +102139,8 @@
           "page": {
             "$ref": "#/components/schemas/Page"
           }
-        }
+        },
+        "required": []
       },
       "LocationManagerSchema": {
         "type": "object",
@@ -101950,12 +102585,51 @@
             "example": 10.99,
             "type": "number"
           },
+          "price_cost": {
+            "description": "The cost price of the article.",
+            "example": 7.99,
+            "type": "number"
+          },
           "tags": {
             "description": "Tags associated with inventory item.",
             "items": {
               "type": "string"
             },
             "type": "array"
+          },
+          "transaction_type": {
+            "description": "Reason for the price update. Recorded in the audit-trail event for the resulting article mutation. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -101994,6 +102668,40 @@
             "enum": [
               "delta",
               "replace"
+            ]
+          },
+          "transaction_type": {
+            "description": "Reason for the quantity update. Recorded in the audit-trail event for the resulting article mutation. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
             ]
           }
         },
@@ -116975,7 +117683,8 @@
               "$ref": "#/components/schemas/OrderingStore"
             }
           }
-        }
+        },
+        "required": []
       },
       "AppAssociationDeleted": {
         "type": "object",
@@ -123889,6 +124598,25 @@
           }
         }
       },
+      "AdditionalInfo": {
+        "type": "object",
+        "description": "Additional information related to the ticket",
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "description": "Human readable name for this info"
+          },
+          "display_value": {
+            "type": "string",
+            "description": "Human readable value for the info"
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Priority of this additional info"
+          }
+        }
+      },
       "AddTicketPayload": {
         "required": [
           "category",
@@ -123918,6 +124646,13 @@
             "type": "object",
             "additionalProperties": true,
             "description": "optional custom data that needs to be sent"
+          },
+          "additional_info": {
+            "type": "array",
+            "description": "Additional information related to the ticket",
+            "items": {
+              "$ref": "#/components/schemas/AdditionalInfo"
+            }
           }
         }
       },
@@ -128657,6 +129392,146 @@
           "company_id",
           "application_id",
           "stage"
+        ]
+      },
+      "ZoneProductsAtomicPatchItem": {
+        "type": "object",
+        "description": "A single concurrency-safe add/remove operation applied to one zone's product list.",
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "description": "The unique identifier of the zone to patch."
+          },
+          "product_type": {
+            "type": "string",
+            "description": "The type the zone's product list is made of. Must match the existing zone product type. Product ids are not validated against the catalog for any type.",
+            "enum": [
+              "all",
+              "item_id",
+              "product",
+              "department",
+              "category",
+              "tag"
+            ]
+          },
+          "values": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Product identifiers to add or remove - uids for item_id/product/department/category (integers) or tag strings.",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "action": {
+            "type": "string",
+            "description": "Whether to add the values to, or remove them from, the zone product list.",
+            "enum": [
+              "add",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "zone_id",
+          "product_type",
+          "values",
+          "action"
+        ]
+      },
+      "ZoneProductsAtomicPatchDetails": {
+        "type": "object",
+        "description": "Request body for the synchronous, concurrency-safe bulk add/remove of products on one or more zones. Each item is applied with an atomic MongoDB array operator (`$addToSet` for add, `$pull` for remove), so concurrent writes to the same zone never lose each other's changes (no read-modify-write lost-update race).",
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "description": "List of per-zone product patch operations.",
+            "items": {
+              "$ref": "#/components/schemas/ZoneProductsAtomicPatchItem"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ZoneProductsAtomicPatchResultItem": {
+        "type": "object",
+        "description": "Result of applying one item from the atomic zone products patch request.",
+        "properties": {
+          "zone_id": {
+            "type": "string"
+          },
+          "product_type": {
+            "type": "string",
+            "description": "The type the zone's product list is made of. Mirrors the product_type sent in the patch request.",
+            "enum": [
+              "all",
+              "item_id",
+              "product",
+              "department",
+              "category",
+              "tag"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "add",
+              "remove"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "failed"
+            ]
+          },
+          "values_count": {
+            "type": "integer",
+            "description": "Number of products in the zone's product list after a successful patch."
+          },
+          "error": {
+            "type": "array",
+            "nullable": true,
+            "description": "Present when status is `failed`.",
+            "items": {
+              "$ref": "#/components/schemas/ZoneProductsAtomicPatchItemError"
+            }
+          }
+        },
+        "required": [
+          "zone_id",
+          "product_type",
+          "action",
+          "status"
+        ]
+      },
+      "ZoneProductsAtomicPatchResult": {
+        "type": "object",
+        "description": "Per-item results and roll-up summary of an atomic zone products patch.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZoneProductsAtomicPatchResultItem"
+            }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ZoneProductsAtomicPatchSummary"
+          }
+        },
+        "required": [
+          "items",
+          "summary"
         ]
       },
       "CourierPartnerToServiceability": {
@@ -133860,6 +134735,41 @@
           "page_number",
           "has_next",
           "total_records"
+        ]
+      },
+      "ZoneProductsAtomicPatchItemError": {
+        "type": "object",
+        "description": "A single error encountered while applying a patch item.",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ZoneProductsAtomicPatchSummary": {
+        "type": "object",
+        "description": "Roll-up counts for an atomic zone products patch.",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "success": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "success",
+          "failed"
         ]
       },
       "PackageSchema": {
@@ -151170,6 +152080,48 @@
           "status"
         ]
       },
+      "OrderMetaUpdate": {
+        "type": "object",
+        "description": "Order meta request schema to update order metadata such as PAN. Used when amount >= online_threshold_amount and PAN is required before create-payment-order.",
+        "required": [
+          "pan_no"
+        ],
+        "properties": {
+          "pan_no": {
+            "type": "string",
+            "description": "Valid Indian PAN (Permanent Account Number). Format: 5 letters, 4 digits, 1 letter (e.g. AAAAA9999A). Case-insensitive; stored in uppercase.",
+            "example": "AAAAA9999A",
+            "minLength": 10,
+            "maxLength": 10
+          }
+        }
+      },
+      "OrderMetaResult": {
+        "type": "object",
+        "description": "Order meta update success response schema.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Success message indicating order meta was updated.",
+            "example": "order meta updated"
+          }
+        }
+      },
+      "OrderMetaErrorResult": {
+        "type": "object",
+        "description": "Order meta update error response schema (400).",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the request was successful.",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message describing the failure."
+          }
+        }
+      },
       "AddressDetail": {
         "type": "object",
         "properties": {
@@ -152606,6 +153558,65 @@
           "is_eligible",
           "message"
         ]
+      },
+      "OrderTransactionList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful.",
+            "example": true
+          },
+          "items": {
+            "type": "array",
+            "description": "List of transactions ordered by created_on ascending.",
+            "example": [],
+            "items": {
+              "$ref": "#/components/schemas/OrderTransactionItem"
+            }
+          }
+        }
+      },
+      "OrderTransactionItem": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "description": "Merchant transaction ID.",
+            "example": "TR692D2BC451FA77D8GF"
+          },
+          "payment_mode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment mode name (e.g. UPI, Card, COD).",
+            "example": "UPI"
+          },
+          "logo": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment mode logo URL. Returns the small logo if available, falls back to large logo. Null if no logo is configured.",
+            "example": "https://cdn.fynd.com/payment/upi_small.png"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true,
+            "description": "Transaction amount.",
+            "example": 499
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latest transaction status (e.g. complete, pending, failed, cancelled).",
+            "example": "complete"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction creation timestamp (ISO 8601).",
+            "example": "2024-01-15T10:30:00Z"
+          }
+        }
       },
       "ClickStatsResult": {
         "type": "object",
