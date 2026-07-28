@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Platform Side APIs v2.12.6",
-    "version": "3.31.0",
+    "title": "Fynd Platform's Platform Side APIs v2.12.7",
+    "version": "3.32.0",
     "description": "Fynd Platform's Platform Side APIs"
   },
   "openapi": "3.0.2",
@@ -5318,6 +5318,110 @@
           "Cart"
         ],
         "tags": [
+          "Cart"
+        ]
+      }
+    },
+    "/service/platform/cart/v1.0/company/{company_id}/application/{application_id}/serviceability/cod": {
+      "post": {
+        "summary": "checkCODServiceability | Check COD serviceability and charges for cart",
+        "description": "Check whether Cash on Delivery (COD) is available for the given cart items at a specific pin code, and return the applicable COD charges. Performs a pincode-level serviceability check via the logistics layer and computes COD fee based on cart value and payment configuration.",
+        "tags": [
+          "Cart"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformCartCODServiceabilityCreation"
+              },
+              "example": {
+                "shipping_address": {
+                  "name": "Test User",
+                  "address": "Test adddress",
+                  "area": "test",
+                  "phone": 999999999,
+                  "area_code": "400093",
+                  "area_code_slug": "pincode",
+                  "city": "Mumbai",
+                  "state": "Maharastra",
+                  "country": "India",
+                  "email": "test@example.com",
+                  "address_type": "office"
+                },
+                "cart_items": [
+                  {
+                    "product_id": "803140",
+                    "size": "S"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart details with COD availability and charges at pincode level",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformCartCODServiceabilityResult"
+                },
+                "examples": {
+                  "COD available": {
+                    "value": {
+                      "is_valid": true,
+                      "is_cod_available": true,
+                      "breakup_values": {
+                        "raw": {
+                          "cod_charge": 50,
+                          "subtotal": 1299,
+                          "total": 1349,
+                          "currency_code": "INR"
+                        }
+                      }
+                    }
+                  },
+                  "COD not available": {
+                    "value": {
+                      "is_valid": true,
+                      "is_cod_available": false,
+                      "breakup_values": {
+                        "raw": {
+                          "cod_charge": 0,
+                          "subtotal": 1299,
+                          "total": 1299,
+                          "currency_code": "INR"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Current company id",
+            "in": "path",
+            "required": true,
+            "name": "company_id"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Current Application id of sales channel",
+            "in": "path",
+            "required": true,
+            "name": "application_id"
+          }
+        ],
+        "x-groups": [
           "Cart"
         ]
       }
@@ -88252,6 +88356,57 @@
           }
         }
       },
+      "PlatformCartCODServiceabilityCreation": {
+        "type": "object",
+        "description": "Shipping detail from API request schema which includes list of items and shipping address",
+        "properties": {
+          "cart_items": {
+            "type": "array",
+            "description": "List of items in the cart",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          }
+        },
+        "required": [
+          "cart_items",
+          "shipping_address"
+        ]
+      },
+      "PlatformCartCODServiceabilityResult": {
+        "type": "object",
+        "description": "Cart COD serviceability API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc along with COD availability and charges.",
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "description": "Cart validity flag determines the if the response is valid or not"
+          },
+          "items": {
+            "type": "array",
+            "description": "Items data list in user cart that includes item id, item size, store id, available sizes and rest of the item related data",
+            "items": {
+              "$ref": "#/components/schemas/CartProductInfo"
+            }
+          },
+          "delivery_promise": {
+            "$ref": "#/components/schemas/ShipmentPromise"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message of the cart detail API response"
+          },
+          "breakup_values": {
+            "$ref": "#/components/schemas/CartBreakup"
+          },
+          "is_cod_available": {
+            "type": "boolean",
+            "description": "Indicates whether Cash on Delivery is available for the given cart items at the requested pincode, based on logistics serviceability and payment configuration"
+          }
+        }
+      },
       "OpenApiFiles": {
         "type": "object",
         "description": "File related information like keys and their url path",
@@ -130785,6 +130940,54 @@
         "type": "object",
         "description": "Delivery service option with ID, type, name, and default status.",
         "properties": {
+          "application_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The unique identifier of the application."
+          },
+          "business_unit": {
+            "type": "array",
+            "nullable": true,
+            "description": "Business units (e.g. Store OS, Storefront) this fulfillment option applies to; mirrors the platform fulfillment option payload.",
+            "items": {
+              "$ref": "#/components/schemas/BusinessUnit"
+            }
+          },
+          "company_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The unique identifier of the company."
+          },
+          "default_for": {
+            "$ref": "#/components/schemas/FulfillmentOptionDefaultFor"
+          },
+          "modified_by": {
+            "$ref": "#/components/schemas/ModifiedBy"
+          },
+          "modified_on": {
+            "type": "string",
+            "nullable": true,
+            "description": "Timestamp when the object was last modified."
+          },
+          "serviceability_type": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "zone_based",
+              "all"
+            ],
+            "description": "Type of serviceability for the fulfillment option."
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "active",
+              "inactive",
+              "draft"
+            ],
+            "description": "Status of the fulfillment option."
+          },
           "slug": {
             "type": "string",
             "description": "Unique identifier for the delivery type."
@@ -130812,6 +131015,66 @@
           "name": {
             "type": "string",
             "description": "Name of the delivery service."
+          },
+          "max_promise_allowed": {
+            "$ref": "#/components/schemas/MaxPromiseAllowed"
+          }
+        }
+      },
+      "BusinessUnit": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "STORE_OS",
+              "STORE_FRONT"
+            ],
+            "description": "Name of the business unit."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the business unit is active."
+          }
+        }
+      },
+      "FulfillmentOptionDefaultFor": {
+        "type": "object",
+        "description": "When enabled for a specific business unit, the fulfillment option associated with this flag is treated as the default and is automatically applied whenever a fulfillment option is not supplied.",
+        "properties": {
+          "storefront": {
+            "type": "boolean",
+            "description": "If set to true, this fulfillment option will be default for storefront.",
+            "example": true
+          },
+          "storeos": {
+            "type": "boolean",
+            "description": "If set to true, this fulfillment option will be default for storeos.",
+            "example": true
+          }
+        }
+      },
+      "MaxPromiseAllowed": {
+        "type": "object",
+        "description": "Maximum promise allowed for a delivery service (e.g. delivery SLA in seconds).",
+        "properties": {
+          "value": {
+            "type": "number",
+            "description": "Promise value (in seconds).",
+            "example": 259200
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether this promise limit is active."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of promise configuration. For same_day, value is 0 seconds.",
+            "enum": [
+              "same_day",
+              "next_day",
+              "custom"
+            ]
           }
         }
       },
@@ -131181,39 +131444,6 @@
             "type": "integer",
             "description": "Quantity of items not under quality control (nullable).",
             "nullable": true
-          }
-        }
-      },
-      "FulfillmentOptionDefaultFor": {
-        "type": "object",
-        "description": "When enabled for a specific business unit, the fulfillment option associated with this flag is treated as the default and is automatically applied whenever a fulfillment option is not supplied.",
-        "properties": {
-          "storefront": {
-            "type": "boolean",
-            "description": "If set to true, this fulfillment option will be default for storefront.",
-            "example": true
-          },
-          "storeos": {
-            "type": "boolean",
-            "description": "If set to true, this fulfillment option will be default for storeos.",
-            "example": true
-          }
-        }
-      },
-      "BusinessUnit": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "enum": [
-              "STORE_OS",
-              "STORE_FRONT"
-            ],
-            "description": "Name of the business unit."
-          },
-          "is_active": {
-            "type": "boolean",
-            "description": "Whether the business unit is active."
           }
         }
       },
