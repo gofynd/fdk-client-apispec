@@ -1,7 +1,7 @@
 {
   "info": {
-    "title": "Fynd Platform's Platform Side APIs v2.12.8",
-    "version": "3.33.0",
+    "title": "Fynd Platform's Platform Side APIs v2.12.9",
+    "version": "3.34.0",
     "description": "Fynd Platform's Platform Side APIs"
   },
   "openapi": "3.0.2",
@@ -23028,6 +23028,20 @@
                 "value": [
                   "test"
                 ]
+              }
+            }
+          },
+          {
+            "description": "When true, returns only locations that have at least one document with verified set to true. Locations with an empty documents array are excluded.",
+            "in": "query",
+            "name": "opted",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "success": {
+                "value": true
               }
             }
           }
@@ -71512,6 +71526,21 @@
               "type": "string",
               "example": "68e7a15429f2a988886094d3,68e7a15429f2a988886094d4"
             }
+          },
+          {
+            "in": "query",
+            "name": "include_count",
+            "description": "Set to false to skip computing the total number of matching shipments. `total_count` and `page.total` are then returned as -1; use `page.has_next` to paginate. The total can be fetched separately from the listing/count API (`GET /service/platform/order/v1.0/company/{company_id}/listing/count/`).",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
           }
         ],
         "responses": {
@@ -72972,6 +73001,16 @@
               "type": "string",
               "example": "68e7a15429f2a988886094d3,68e7a15429f2a988886094d4"
             }
+          },
+          {
+            "in": "query",
+            "name": "include_count",
+            "description": "Set to false to skip computing the total number of matching orders. `total_count` and `page.total` are then returned as -1; use `page.has_next` to paginate. The total can be fetched separately from the listing/count API (`GET /service/platform/order/v1.0/company/{company_id}/listing/count/`).",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
           }
         ],
         "responses": {
@@ -72990,6 +73029,544 @@
           "Order"
         ],
         "summary": "getOrders | List orders"
+      }
+    },
+    "/service/platform/order/v1.0/company/{company_id}/listing/count/": {
+      "get": {
+        "description": "Get the total number of shipments or orders matching the given filters. Companion to the shipments-listing and orders-listing APIs when they are called with `include_count=false`: the listing skips computing the total and this API returns it separately. Accepts the same filter query parameters as the listing APIs; pass the same values that were sent to the listing call.",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Unique identifier of a company on the platform.",
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_entity",
+            "description": "Whether to count shipments or orders. Must match the group_entity of the listing API whose count is being fetched.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "shipments",
+                "orders"
+              ],
+              "default": "shipments"
+            },
+            "examples": {
+              "success": {
+                "value": "shipments"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "parent_view_slug",
+            "description": "Slug of the parent view the count is for. Used internally while resolving the request; not returned in the response.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "unfulfilled"
+            }
+          },
+          {
+            "in": "query",
+            "name": "child_view_slug",
+            "description": "Slug of the child view (lane) the count is for. Used internally while resolving the request; not returned in the response.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "new"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bag_status",
+            "description": "Comma separated values of bag statuses.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "placed, bag_confirmed, bag_invoiced"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "status_assigned",
+            "description": "Used to filter shipments based on status present in shipment_status_history. For more information on these statuses, refer to the Fynd Partners documentation.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "return_initiated"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "time_to_dispatch",
+            "required": false,
+            "description": "Indicates the time to dispatch.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                -1
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "search_type",
+            "description": "Specifies the key used to determine the type of search being performed.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "shipment_id",
+                "order_id",
+                "channel_name",
+                "fynd_order_id"
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": "shipment_id"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "search_value",
+            "description": "The value corresponding to the search type, such as a specific shipment ID or order ID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "16578901076461551493K"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_date",
+            "description": "Start Date in DD-MM-YYYY format",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-05-10"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_date",
+            "description": "End Date in DD-MM-YYYY format",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-05-10"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "description": "The UTC start date in ISO format (YYYY-MM-DDTHH:MM:SSZ) for filtering results.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-08-21T09:48:40.000Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "description": "The UTC end date in ISO format (YYYY-MM-DDTHH:MM:SSZ) for filtering results.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-08-21T09:48:40.000Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "status_assigned_start_date",
+            "description": "Specifies the starting UTC date and time (in ISO format, YYYY-MM-DDTHH:MM:SSZ) to define the lower boundary for filtering shipments based on the `created_at` timestamp of statuses in the shipment's status history. It allows filtering statuses that were created within a  specific time range.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "success": {
+                "value": "2024-10-07T18:30:00.000Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "status_assigned_end_date",
+            "description": "Specifies the ending UTC date and time (in ISO format, YYYY-MM-DDTHH:MM:SSZ) to define the  upper boundary for filtering shipments based on the `created_at` timestamp of statuses  in the shipment's status history.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "status_assigned_end_date": {
+                "value": "2024-11-07T18:29:59.999Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "dp_ids",
+            "description": "A comma-separated list of delivery partner IDs to filter results by specific delivery partners.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "19,26"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "stores",
+            "description": "A comma-separated list of store IDs used to filter results to only those related to specific stores.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "19,26"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "sales_channels",
+            "description": "A comma-separated list of sales channel IDs to filter results based on the sales channels involved.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "000000000000000000000001,614b42d1ea943427b5f46d1e"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "fetch_active_shipment",
+            "description": "A boolean flag that indicates whether to include only active shipments in the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "allow_inactive",
+            "description": "A flag indicating whether to allow the inclusion of inactive shipments in the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "exclude_locked_shipments",
+            "description": "A flag to specify whether to exclude shipments that are locked from the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "examples": {
+              "success": {
+                "value": true
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "payment_methods",
+            "description": "A comma-separated list of payment methods.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "COD,PREPAID"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "channel_shipment_id",
+            "description": "The shipment ID used in the application, which can be used to reference specific shipments.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "16731535496121004000"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "channel_order_id",
+            "description": "The order ID used in the application.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "FY63BA4C0D0125F8A075"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "company_affiliate_tag",
+            "required": false,
+            "description": "A tag used to identify the company's affiliation for filtering or reporting purposes.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "company tag"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "my_orders",
+            "required": false,
+            "description": "A boolean flag indicating whether the query should return only the user's orders.",
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "platform_user_id",
+            "required": false,
+            "description": "The unique identifier of the user on the platform, useful for filtering orders related to a specific user.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "AKFBAD9C3DEC9EB773"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "show_cross_company_data",
+            "description": "A flag indicating whether to include data from both cross-company and non-cross-company orders in the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "tags",
+            "description": "A comma-separated list of tags associated with the orders to filter results based on specific characteristics.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "gifting,international"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "description": "The unique identifier for the customer associated with the query, useful for filtering results to a specific customer.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "63a2ce177e9f59d3166dd700"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_type",
+            "description": "The type of order being queried.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "HomeDelivery",
+              "enum": [
+                "HomeDelivery",
+                "PickAtStore",
+                "Digital"
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": "HomeDelivery"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "enforce_date_filter",
+            "description": "Applies a date filter for listing shipments. This is useful when fetching data  for a specific date range while performing searches.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "fulfillment_type",
+            "description": "Define the Fulfillment Type for Listing Orders, This is use when we want to get list of shipments or orders by cross store or cross company or fulfilling Store (by default), this is also depends on the login user accessType and store access",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "FULFILLMENT",
+              "enum": [
+                "FULFILLMENT",
+                "CROSS_STORE",
+                "CROSS_COMPANY"
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": "FULFILLMENT"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "ordering_source",
+            "description": "Filter orders by ordering source. Accepts comma-separated values for multiple sources.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "gofynd"
+            }
+          },
+          {
+            "in": "query",
+            "name": "channel_account_id",
+            "description": "Comma-separated channel account IDs to filter orders by specific channel accounts.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "68e7a15429f2a988886094d3,68e7a15429f2a988886094d4"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Count of records matching the view and filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingCountResponseSchema"
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Shipment"
+        ],
+        "summary": "getListingCount | Get listing count"
       }
     },
     "/service/platform/order/v1.0/company/{company_id}/application/{application_id}/shipments/": {
@@ -86625,7 +87202,17 @@
           },
           "included_in_eligibility_amount": {
             "type": "boolean",
-            "description": "When true (valid only for charge type with article_level_distribution=true), the distributed charge value is added to the price_total used for coupon eligibility checks. Defaults to false."
+            "description": "Opt-in flag. When true (valid only for charge type with article_level_distribution=true), the distributed charge value is added to the price_total used for offer cart_total eligibility checks. Which mode(s) are affected is controlled by eligibility_scope. When false or omitted, the charge does not affect coupon/promotion eligibility and eligibility_scope is ignored. Defaults to false — carts without this flag are unaffected."
+          },
+          "eligibility_scope": {
+            "type": "string",
+            "enum": [
+              "coupon",
+              "promotion",
+              "all"
+            ],
+            "default": "coupon",
+            "description": "When included_in_eligibility_amount is true, which offer mode receives this charge in cart_total eligibility: coupon (default / omitted), promotion or all (both coupon and promotion). Has no effect when included_in_eligibility_amount is false. Defaults to coupon when omitted."
           },
           "collection": {
             "$ref": "#/components/schemas/Collection"
@@ -86716,7 +87303,17 @@
           },
           "included_in_eligibility_amount": {
             "type": "boolean",
-            "description": "When true (valid only for charge type with article_level_distribution=true), the distributed charge value is added to the price_total used for coupon eligibility checks. Defaults to false."
+            "description": "Opt-in flag. When true (valid only for charge type with article_level_distribution=true), the distributed charge value is added to the price_total used for offer cart_total eligibility checks. Which mode(s) are affected is controlled by eligibility_scope. When false or omitted, the charge does not affect coupon/promotion eligibility and eligibility_scope is ignored. Defaults to false — carts without this flag are unaffected."
+          },
+          "eligibility_scope": {
+            "type": "string",
+            "enum": [
+              "coupon",
+              "promotion",
+              "all"
+            ],
+            "default": "coupon",
+            "description": "When included_in_eligibility_amount is true, which offer mode receives this charge in cart_total eligibility: coupon (default / omitted), promotion or all (both coupon and promotion). Has no effect when included_in_eligibility_amount is false. Defaults to coupon when omitted."
           },
           "id": {
             "type": "string",
@@ -86837,7 +87434,17 @@
           },
           "included_in_eligibility_amount": {
             "type": "boolean",
-            "description": "When true (valid only for charge type with article_level_distribution=true), the distributed charge value is added to the price_total used for coupon eligibility checks. Defaults to false."
+            "description": "Opt-in flag. When true (valid only for charge type with article_level_distribution=true), the distributed charge value is added to the price_total used for offer cart_total eligibility checks. Which mode(s) are affected is controlled by eligibility_scope. When false or omitted, the charge does not affect coupon/promotion eligibility and eligibility_scope is ignored. Defaults to false — carts without this flag are unaffected."
+          },
+          "eligibility_scope": {
+            "type": "string",
+            "enum": [
+              "coupon",
+              "promotion",
+              "all"
+            ],
+            "default": "coupon",
+            "description": "When included_in_eligibility_amount is true, which offer mode receives this charge in cart_total eligibility: coupon (default / omitted), promotion or all (both coupon and promotion). Has no effect when included_in_eligibility_amount is false. Defaults to coupon when omitted."
           },
           "collection": {
             "$ref": "#/components/schemas/Collection"
@@ -93455,6 +94062,11 @@
               "contract_price",
               "custom"
             ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique identifier code for the offer. For coupons (mode = \"coupon\"), this is the coupon code users enter to apply the offer. For promotions (mode = \"promotion\"), this field may be null or empty as promotions are auto-applied.",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -142954,6 +143566,10 @@
             "type": "boolean",
             "default": true,
             "description": "Indicates whether cancellations are allowed when this coupon is applied."
+          },
+          "allow_zero_discount": {
+            "type": "boolean",
+            "description": "Set by the cart when a 0 discount on this coupon is legitimate -- an eligibility-gate coupon rather than a price cut, where the discount amount exactly cancels the item price. Optional, and sent only when true; absence means the coupon is a normal price cut. The order service does not infer this and takes no action without the flag."
           }
         },
         "required": [
@@ -143724,6 +144340,16 @@
             "type": "string",
             "description": "The unique identifier or SKU (Stock Keeping Unit) of the product. This is used to match products across packages and bags.",
             "example": "PROD001"
+          }
+        }
+      },
+      "ListingCountResponseSchema": {
+        "type": "object",
+        "description": "Count of records matching the given filters.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "The total number of records matching the filters."
           }
         }
       },
@@ -145731,7 +146357,7 @@
           "total_count": {
             "type": "integer",
             "nullable": true,
-            "description": "The total number of shipments matching the query criteria."
+            "description": "The total number of shipments matching the query criteria. Returned as -1 when `include_count=false`."
           },
           "message": {
             "type": "string",
@@ -148063,7 +148689,7 @@
           "total_count": {
             "type": "integer",
             "nullable": true,
-            "description": "The total number of orders matching the query criteria."
+            "description": "The total number of orders matching the query criteria. Returned as -1 when `include_count=false`."
           },
           "message": {
             "type": "string",
@@ -157419,7 +158045,12 @@
           },
           "phone": {
             "type": "string",
-            "description": "Filter users by their exact phone number."
+            "description": "Filter users by their exact phone number, digits only. Prefer the **national number** with the calling code supplied separately in `country_code`. A full number with the calling code embedded is still accepted, but is ambiguous: without `country_code` the value is searched both as an Indian national number and as a complete international number, so an input valid in either sense may return customers from both."
+          },
+          "country_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "Calling code for `phone`, digits only, an optional leading `+` is accepted (for example `91`, `62`, `+44`). Recommended whenever `phone` holds only the national number - it removes the ambiguity described above and scopes the search to that country. When omitted, a bare number is treated as Indian. Ignored when `phone` is absent."
           },
           "definition_ids": {
             "type": "array",
@@ -157466,14 +158097,25 @@
               "ew",
               "btw",
               "in",
-              "nin"
+              "nin",
+              "today",
+              "tomorrow",
+              "week",
+              "month",
+              "xdays",
+              "days_after_value",
+              "days_before_value"
             ],
-            "description": "Filter operation to apply on the attribute value. Supported operations include:\n- `eq`: Equal to   - `ne`: Not equal to   - `gt`: Greater than (or is after for dates)   - `lt`: Less than (or is before for dates)   - `gte`: Greater than or equal to   - `lte`: Less than or equal to   - `cnt`: Contains (for strings)   - `nct`: Does not contain (for strings)   - `is`: Matches exactly (for strings)   - `nis`: Does not match exactly (for strings)   - `sw`: Starts with (for strings)   - `ew`: Ends with (for strings)   - `btw`: Between two values (for date and datetime types)   - `in`: Value exists in given list   - `nin`: Value does not exist in given list"
+            "description": "Filter operation to apply on the attribute value. Supported operations include:\n- `eq`: Equal to   - `ne`: Not equal to   - `gt`: Greater than (or is after for dates)   - `lt`: Less than (or is before for dates)   - `gte`: Greater than or equal to   - `lte`: Less than or equal to   - `cnt`: Contains (for strings)   - `nct`: Does not contain (for strings)   - `is`: Matches exactly (for strings)   - `nis`: Does not match exactly (for strings)   - `sw`: Starts with (for strings)   - `ew`: Ends with (for strings)   - `btw`: Between two values (for date and datetime types)   - `in`: Value exists in given list   - `nin`: Value does not exist in given list - `today`, `tomorrow`, `week`, and `month`: Date constants - `xdays`: Date range from today through the specified number of days - `days_after_value`, `days_before_value`: Relative date comparisons\nType-native operators are:\n- `number`: `eq`, `ne`, `gt`, `lt`, `gte`, `lte` - `string`, `html_string`, `image_url`: `cnt`, `nct`, `is`, `nis`, `sw`, `ew` - `boolean`: `eq` - `date`: `eq`, `ne`, `gt`, `lt`, `btw`, `today`, `tomorrow`, `week`,\n  `month`, `xdays`, `days_after_value`, `days_before_value`\n- `date_time`: `gt`, `lt`, `btw` - `dropdown`, `number_array`, `string_array`, `store_uid_array`,\n  `platform_user_array`: `in`, `nin`\n\nFor v1 backward compatibility, the previously supported database comparisons remain accepted where their value shape is valid: strings also accept `eq`, `ne`, `gt`, `lt`, `gte`, and `lte`; dates also accept `gte` and `lte`; date-times also accept `eq`, `ne`, `gte`, and `lte`; booleans also accept `ne`; and array-like types also accept `eq` and `ne`. Scalar number, string, boolean, date, and date-time attributes also accept `in` and `nin` with a type-matched value array; numbers also accept `btw` with two ordered numeric values. The relative date operators are restricted to the `date` type."
           },
           "value": {
             "additionalProperties": true,
-            "description": "Values to be used in filtering the attribute. Can be a single value or an array of values. Types supported: string, number, array of string, or array of number.",
+            "description": "Values to be used in filtering the attribute. Can be a single value or an array of values. Types supported: string, number, boolean, array of string, or array of number. `btw` requires an array of exactly two values. `xdays`, `days_after_value` and `days_before_value` take a non-negative whole number (capped at 364 when `ignore_year` is true). The concrete JSON type depends on the referenced attribute definition and is validated by the API.",
             "type": "object"
+          },
+          "ignore_year": {
+            "type": "boolean",
+            "description": "For date conditions, compare month and day without considering the stored year."
           }
         }
       },
