@@ -1,11 +1,296 @@
 {
   "info": {
-    "title": "Fynd Platform's Platform Side APIs v2.12.9",
-    "version": "3.34.0",
+    "title": "Fynd Platform's Platform Side APIs v2.12.11",
+    "version": "3.35.0",
     "description": "Fynd Platform's Platform Side APIs"
   },
   "openapi": "3.0.2",
   "paths": {
+    "/service/platform/authorization/v1.0/company/{company_id}/application/{application_id}/staff/list": {
+      "get": {
+        "summary": "getApplicationStaffList | Get a paginated list of application staff",
+        "tags": [
+          "Authorization"
+        ],
+        "x-groups": [
+          "Staff"
+        ],
+        "description": "Returns a paginated list of staff assigned to a sales channel, including each staff member's name, employee code, incentive eligibility, assigned ordering stores, and title.",
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier for the company.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique ID of the application",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "000000000000000000000001"
+              }
+            }
+          },
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "description": "Page number for pagination. Defaults to 1.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "description": "Number of staff members to return per page. Defaults to 10 and must not exceed 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            },
+            "examples": {
+              "success": {
+                "value": 100
+              }
+            }
+          },
+          {
+            "name": "order_incent",
+            "in": "query",
+            "required": false,
+            "description": "Select `true` to retrieve only staff members eligible for incentives on orders.",
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "success": {
+                "value": true
+              }
+            }
+          },
+          {
+            "name": "ordering_store",
+            "in": "query",
+            "required": false,
+            "description": "Positive integer ID of the ordering store. Returns staff assigned to that store, plus application staff with the `admin` role.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "description": "Unique ID of the user",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "000000000000000016841367"
+              }
+            }
+          },
+          {
+            "name": "user_name",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the user's first or last name.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "User"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of application staff members.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationStaffPage"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "items": [
+                        {
+                          "application": "000000000000000000000001",
+                          "user": "000000000000000016841367",
+                          "title": "Staff",
+                          "order_incent": true,
+                          "stores": [
+                            1
+                          ],
+                          "employee_code": "EMP1",
+                          "first_name": "Test",
+                          "last_name": "User",
+                          "profile_pic_url": "https://cdn.fynd.com/profile.jpg"
+                        }
+                      ],
+                      "page": {
+                        "type": "number",
+                        "current": 1,
+                        "size": 10,
+                        "item_total": 1,
+                        "has_next": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters. All detected validation errors are returned together.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrors"
+                },
+                "examples": {
+                  "invalid_user": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "user",
+                          "message": "User ID is not valid"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_application": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "application_id",
+                          "message": "Application ID is not valid"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_page": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "page_no",
+                          "message": "page_no must be a positive integer"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_page_size": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "page_size",
+                          "message": "page_size must be an integer between 1 and 100"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_pagination": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "page_no",
+                          "message": "page_no must be a positive integer"
+                        },
+                        {
+                          "field": "page_size",
+                          "message": "page_size must be an integer between 1 and 100"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_order_incent": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "order_incent",
+                          "message": "order_incent must be a boolean"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_ordering_store": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "ordering_store",
+                          "message": "ordering_store must be a positive integer"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                },
+                "example": {
+                  "message": "unauthenticated"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The company could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                },
+                "example": {
+                  "message": "Invalid company id"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/platform/billing/v1.0/company/{company_id}/extension/{extension_id}/charge/{charge_id}": {
       "get": {
         "summary": "getChargeDetails | Obtain charge details",
@@ -69685,6 +69970,126 @@
                     "primary_payment_mode": "Paytm"
                   },
                   "summary": "Create Order with order-level and line-item charges"
+                },
+                "Create Cross-Currency (Export) Order": {
+                  "value": {
+                    "shipments": [
+                      {
+                        "type": "HomeDelivery",
+                        "line_items": [
+                          {
+                            "seller_identifier": "25MAR2023TESTING",
+                            "monetary_values": {
+                              "amount_paid": 90,
+                              "price_effective": 80,
+                              "price_marked": 100,
+                              "discount": 20,
+                              "delivery_charges": 10
+                            },
+                            "quantity": 1,
+                            "payment_methods": [
+                              {
+                                "gateway": {
+                                  "name": "Razorpay",
+                                  "logo": "http://localhost:81/v1.0/company/33708/orders"
+                                },
+                                "mode_of_payment": {
+                                  "slug": "name",
+                                  "name": "Prepaid"
+                                },
+                                "payment_identifier": "553224562",
+                                "amount_paid": 90,
+                                "transaction_party": {
+                                  "refund_bearer": "Fynd",
+                                  "collection_bearer": "Fynd"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "location_id": 17
+                      }
+                    ],
+                    "currency_details": {
+                      "ordering_currency": {
+                        "currency_code": "USD",
+                        "currency_symbol": "$"
+                      },
+                      "conversion_rate": {
+                        "rate": 80,
+                        "timestamp_ms": 1112057
+                      }
+                    },
+                    "billing_details": {
+                      "first_name": "Jordan",
+                      "last_name": "Blake",
+                      "middle_name": "",
+                      "title": "",
+                      "gender": "male",
+                      "mobile_number": "2025550143",
+                      "alternate_mobile_number": "",
+                      "email": "jordan.blake@example.com",
+                      "alternate_email": "",
+                      "address": "",
+                      "address1": "350 Fifth Avenue",
+                      "address2": "",
+                      "house_no": "",
+                      "floor_no": "",
+                      "landmark": "",
+                      "city": "New York",
+                      "state": "New York",
+                      "state_code": "",
+                      "country": "United States",
+                      "country_iso_code": "US",
+                      "pincode": "10001",
+                      "address_type": "Home",
+                      "geo_location": {
+                        "latitude": 40.7128,
+                        "longitude": -74.006
+                      }
+                    },
+                    "shipping_details": {
+                      "first_name": "Jordan",
+                      "last_name": "Blake",
+                      "middle_name": "",
+                      "title": "",
+                      "gender": "male",
+                      "mobile_number": "2025550143",
+                      "alternate_mobile_number": "",
+                      "email": "jordan.blake@example.com",
+                      "alternate_email": "",
+                      "address": "",
+                      "address1": "350 Fifth Avenue",
+                      "address2": "",
+                      "house_no": "",
+                      "floor_no": "",
+                      "landmark": "",
+                      "area_code_slug": "",
+                      "city": "New York",
+                      "state": "New York",
+                      "state_code": "",
+                      "country": "United States",
+                      "country_phone_code": "",
+                      "country_iso_code": "US",
+                      "pincode": "10001",
+                      "address_type": "Office",
+                      "geo_location": {
+                        "latitude": 40.7128,
+                        "longitude": -74.006
+                      }
+                    },
+                    "cp_configuration": {
+                      "shipping_by": "Fynd"
+                    },
+                    "channel_location_id": 161149,
+                    "order_platform": "sint",
+                    "allow_location_reassignment": true,
+                    "user_details": {
+                      "user_oid": null
+                    },
+                    "primary_payment_mode": "Paytm"
+                  },
+                  "summary": "Create an order priced in a currency other than the seller's, the shape an export order takes. Everything inside monetary_values, and every payment method amount_paid, is PER UNIT and in the ORDERING currency (USD here) -- do not convert any of them yourself. conversion_rate.rate is seller-currency units per ONE ordering-currency unit, so 80 means 80 INR per USD; the platform stores both the ordering figures and the seller-currency ones it derives from that rate. The seller's own currency is never sent in the payload: it comes from the gateway-injected seller details header. is_export_shipment and is_international are likewise derived, from the delivery country against the seller company's, so leave them out."
                 }
               }
             }
@@ -83103,6 +83508,166 @@
           }
         }
       },
+      "Page": {
+        "type": "object",
+        "description": "An object representing a page with pagination details.",
+        "properties": {
+          "item_total": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The total number of all items across all pages.",
+            "example": 10
+          },
+          "next_id": {
+            "type": "string",
+            "description": "The identifier for the next page.",
+            "example": "abc123"
+          },
+          "has_previous": {
+            "type": "boolean",
+            "description": "Indicates whether there is a previous page.",
+            "example": true
+          },
+          "has_next": {
+            "type": "boolean",
+            "description": "Indicates whether there is a next page.",
+            "example": false
+          },
+          "current": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The current page number.",
+            "example": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the page, can be 'cursor' or 'number'.",
+            "example": "cursor"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of items per page.",
+            "example": 20
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of items per page.",
+            "example": 20
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "StandardError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A brief description of the error."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ValidationErrors": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "description": "A list of validation errors in the request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "ApplicationStaff": {
+        "type": "object",
+        "description": "A staff member of a sales channel.",
+        "properties": {
+          "application": {
+            "type": "string",
+            "description": "Unique ID of the associated application."
+          },
+          "user": {
+            "type": "string",
+            "description": "Unique ID of the user."
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the staff member."
+          },
+          "order_incent": {
+            "type": "boolean",
+            "description": "Indicates whether the staff member is eligible for incentives on orders."
+          },
+          "stores": {
+            "type": "array",
+            "description": "List of ids of the ordering stores where the staff member works.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "employee_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "Employee code of the staff member."
+          },
+          "first_name": {
+            "type": "string",
+            "description": "First name of the associated user."
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Last name of the associated user."
+          },
+          "profile_pic_url": {
+            "type": "string",
+            "description": "Profile picture URL of the associated user."
+          }
+        }
+      },
+      "ApplicationStaffPage": {
+        "type": "object",
+        "description": "Paginated application staff members.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of application staff members.",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationStaff"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        },
+        "required": []
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A brief description of the error encountered."
+          },
+          "field": {
+            "type": "string",
+            "description": "The field in the request that caused the error."
+          }
+        },
+        "required": [
+          "message",
+          "field"
+        ]
+      },
       "SubscriptionChargeRes": {
         "type": "object",
         "properties": {
@@ -84744,59 +85309,6 @@
         "required": [
           "code",
           "type_slug"
-        ]
-      },
-      "Page": {
-        "type": "object",
-        "description": "An object representing a page with pagination details.",
-        "properties": {
-          "item_total": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The total number of all items across all pages.",
-            "example": 10
-          },
-          "next_id": {
-            "type": "string",
-            "description": "The identifier for the next page.",
-            "example": "abc123"
-          },
-          "has_previous": {
-            "type": "boolean",
-            "description": "Indicates whether there is a previous page.",
-            "example": true
-          },
-          "has_next": {
-            "type": "boolean",
-            "description": "Indicates whether there is a next page.",
-            "example": false
-          },
-          "current": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The current page number.",
-            "example": 1
-          },
-          "type": {
-            "type": "string",
-            "description": "The type of the page, can be 'cursor' or 'number'.",
-            "example": "cursor"
-          },
-          "size": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The number of items per page.",
-            "example": 20
-          },
-          "page_size": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The number of items per page.",
-            "example": 20
-          }
-        },
-        "required": [
-          "type"
         ]
       },
       "CouponsResult": {
@@ -88901,6 +89413,10 @@
             "nullable": true,
             "format": "date-time",
             "description": "Date and time when the item was added to the cart."
+          },
+          "returnable": {
+            "type": "boolean",
+            "description": "Whether this cart item can be returned after delivery. Resolved from the product/category return configuration combined with the post-order restrictions of any applied coupon, promotion or price adjustment. Same value the order is created with, so it is safe to render a \"non-returnable\" label from it."
           }
         },
         "required": [
@@ -93147,23 +93663,6 @@
           }
         }
       },
-      "ValidationError": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "A brief description of the error encountered."
-          },
-          "field": {
-            "type": "string",
-            "description": "The field in the request that caused the error."
-          }
-        },
-        "required": [
-          "message",
-          "field"
-        ]
-      },
       "OfferUser": {
         "type": "object",
         "description": "Filter offer user criteria",
@@ -94191,33 +94690,6 @@
             "$ref": "#/components/schemas/ActionPage"
           }
         }
-      },
-      "ValidationErrors": {
-        "type": "object",
-        "properties": {
-          "errors": {
-            "description": "A list of validation errors in the request.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            }
-          }
-        },
-        "required": [
-          "errors"
-        ]
-      },
-      "StandardError": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "A brief description of the error."
-          }
-        },
-        "required": [
-          "message"
-        ]
       },
       "AllSizes": {
         "description": "Represents the details of all available sizes for a given product, including the physical dimensions, weight, and identifiers associated with each size.\n",
@@ -142819,7 +143291,7 @@
           },
           "amount_paid": {
             "type": "integer",
-            "description": "Total amount paid by this payment method"
+            "description": "Total amount paid by this payment method, for one unit of the line item, in the ordering currency."
           },
           "payment_identifier": {
             "type": "string",
@@ -142829,7 +143301,7 @@
             "$ref": "#/components/schemas/PaymentMethodTransactionPartySchema"
           }
         },
-        "description": "Payment methods used to fulfill this order."
+        "description": "Payment methods used to fulfill this order.\nEvery amount in this block is PER UNIT and in the ORDERING currency, the same currency as the line item's monetary_values, so do not multiply by quantity and do not convert to the seller's currency yourself. On a cross-currency order the platform restates the amount into the seller's currency for the order-level payment methods, and keeps the ordering-currency amount on the shipment and the bag."
       },
       "PackagesSchema": {
         "type": "object",
@@ -142986,7 +143458,7 @@
         "properties": {
           "amount_paid": {
             "type": "number",
-            "description": "Amount paid by the customer"
+            "description": "Amount paid by the customer, for one unit of the line item."
           },
           "price_effective": {
             "type": "number",
@@ -143021,7 +143493,7 @@
             "description": "Delivery Charges Applied for this Article."
           }
         },
-        "description": "Financial details associated with the line item (note all the values will be in ordering currency i.e customer paid currency). \nPrice Calculation Rules: The updated price values must comply with the following rules:\nBrand Calculated Price:\nbrand_calculated_price = price_effective - Seller Coupon Discount - Seller Promotion Discount\nValue of Goods:\nvalue_of_goods = brand_calculated_price - gst_amount\nAmount Paid:\namount_paid = price_effective + cod_charges + delivery_charges + article_charge - coupon_effective_discount - promotion_effective_discount",
+        "description": "Financial details associated with the line item (note all the values will be in ordering currency i.e customer paid currency).\nEvery value in this block is PER UNIT and in the ORDERING currency, so do not multiply by quantity and do not convert to the seller's currency yourself. The platform derives the seller-currency figures from currency_details.conversion_rate.rate and stores both, and applies quantity above the bag.\nPrice Calculation Rules: The updated price values must comply with the following rules:\nBrand Calculated Price:\nbrand_calculated_price = price_effective - Seller Coupon Discount - Seller Promotion Discount\nValue of Goods:\nvalue_of_goods = brand_calculated_price - gst_amount\nAmount Paid:\namount_paid = price_effective + cod_charges + delivery_charges + article_charge - coupon_effective_discount - promotion_effective_discount",
         "required": [
           "amount_paid",
           "price_effective",
@@ -143488,7 +143960,7 @@
         "properties": {
           "rate": {
             "type": "number",
-            "description": "The exchange rate used to convert monetary values from the ordering currency to the seller's currency."
+            "description": "The exchange rate used to convert monetary values from the ordering currency to the seller's currency: seller-currency units per ONE ordering-currency unit, so 80 for an order priced in USD for a seller in INR. It is required, and it must be exactly 1 when the ordering currency is the seller's own currency, since there is nothing to convert."
           },
           "timestamp_ms": {
             "type": "integer",
