@@ -1,11 +1,296 @@
 {
   "info": {
-    "title": "Fynd Platform's Platform Side APIs vmaster-phm-2",
-    "version": "1.4.15-beta.16",
+    "title": "Fynd Platform's Platform Side APIs vmaster-phm-3",
+    "version": "1.4.15-beta.17",
     "description": "Fynd Platform's Platform Side APIs"
   },
   "openapi": "3.0.2",
   "paths": {
+    "/service/platform/authorization/v1.0/company/{company_id}/application/{application_id}/staff/list": {
+      "get": {
+        "summary": "getApplicationStaffList | Get a paginated list of application staff",
+        "tags": [
+          "Authorization"
+        ],
+        "x-groups": [
+          "Staff"
+        ],
+        "description": "Returns a paginated list of staff assigned to a sales channel, including each staff member's name, employee code, incentive eligibility, assigned ordering stores, and title.",
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier for the company.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique ID of the application",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "000000000000000000000001"
+              }
+            }
+          },
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "description": "Page number for pagination. Defaults to 1.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "description": "Number of staff members to return per page. Defaults to 10 and must not exceed 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            },
+            "examples": {
+              "success": {
+                "value": 100
+              }
+            }
+          },
+          {
+            "name": "order_incent",
+            "in": "query",
+            "required": false,
+            "description": "Select `true` to retrieve only staff members eligible for incentives on orders.",
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "success": {
+                "value": true
+              }
+            }
+          },
+          {
+            "name": "ordering_store",
+            "in": "query",
+            "required": false,
+            "description": "Positive integer ID of the ordering store. Returns staff assigned to that store, plus application staff with the `admin` role.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "name": "user",
+            "in": "query",
+            "required": false,
+            "description": "Unique ID of the user",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "000000000000000016841367"
+              }
+            }
+          },
+          {
+            "name": "user_name",
+            "in": "query",
+            "required": false,
+            "description": "Filter by the user's first or last name.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "User"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A paginated list of application staff members.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationStaffPage"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "items": [
+                        {
+                          "application": "000000000000000000000001",
+                          "user": "000000000000000016841367",
+                          "title": "Staff",
+                          "order_incent": true,
+                          "stores": [
+                            1
+                          ],
+                          "employee_code": "EMP1",
+                          "first_name": "Test",
+                          "last_name": "User",
+                          "profile_pic_url": "https://cdn.fynd.com/profile.jpg"
+                        }
+                      ],
+                      "page": {
+                        "type": "number",
+                        "current": 1,
+                        "size": 10,
+                        "item_total": 1,
+                        "has_next": false
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters. All detected validation errors are returned together.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrors"
+                },
+                "examples": {
+                  "invalid_user": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "user",
+                          "message": "User ID is not valid"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_application": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "application_id",
+                          "message": "Application ID is not valid"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_page": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "page_no",
+                          "message": "page_no must be a positive integer"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_page_size": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "page_size",
+                          "message": "page_size must be an integer between 1 and 100"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_pagination": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "page_no",
+                          "message": "page_no must be a positive integer"
+                        },
+                        {
+                          "field": "page_size",
+                          "message": "page_size must be an integer between 1 and 100"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_order_incent": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "order_incent",
+                          "message": "order_incent must be a boolean"
+                        }
+                      ]
+                    }
+                  },
+                  "invalid_ordering_store": {
+                    "value": {
+                      "errors": [
+                        {
+                          "field": "ordering_store",
+                          "message": "ordering_store must be a positive integer"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                },
+                "example": {
+                  "message": "unauthenticated"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The company could not be found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardError"
+                },
+                "example": {
+                  "message": "Invalid company id"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/service/platform/billing/v1.0/company/{company_id}/extension/{extension_id}/charge/{charge_id}": {
       "get": {
         "summary": "getChargeDetails | Obtain charge details",
@@ -827,6 +1112,14 @@
                 "published"
               ]
             }
+          },
+          {
+            "name": "filter_tags",
+            "in": "query",
+            "description": "Filter by filter tag. Repeat this query parameter for multiple values (e.g. `?filter_tags=homepage&filter_tags=seasonal`). Entities matching any provided tag are returned (OR).",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -883,7 +1176,10 @@
                             "applicable_on": "quantity",
                             "calculate_on": "esp",
                             "value_type": "percentage"
-                          }
+                          },
+                          "filter_tags": [
+                            "homepage"
+                          ]
                         }
                       ],
                       "page": {
@@ -1023,7 +1319,11 @@
                     "ios"
                   ]
                 },
-                "code": "1000off"
+                "code": "1000off",
+                "filter_tags": [
+                  "homepage",
+                  "seasonal"
+                ]
               }
             }
           }
@@ -1281,7 +1581,10 @@
                       "ios"
                     ]
                   },
-                  "type_slug": "percentage_quantity_percentage"
+                  "type_slug": "percentage_quantity_percentage",
+                  "filter_tags": [
+                    "homepage"
+                  ]
                 }
               }
             }
@@ -1454,7 +1757,11 @@
                     "ios"
                   ]
                 },
-                "code": "1000off"
+                "code": "1000off",
+                "filter_tags": [
+                  "homepage",
+                  "seasonal"
+                ]
               }
             }
           }
@@ -1747,6 +2054,14 @@
                 "published"
               ]
             }
+          },
+          {
+            "name": "filter_tags",
+            "in": "query",
+            "description": "Filter by filter tag. Repeat this query parameter for multiple values (e.g. `?filter_tags=flash_sale&filter_tags=vip`). Entities matching any provided tag are returned (OR).",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1837,7 +2152,10 @@
                           },
                           "mode": "promotion",
                           "is_processed": true,
-                          "auto_apply": true
+                          "auto_apply": true,
+                          "filter_tags": [
+                            "flash_sale"
+                          ]
                         }
                       ],
                       "page": {
@@ -1987,6 +2305,10 @@
                     },
                     "currency": "INR",
                     "mode": "promotion",
+                    "filter_tags": [
+                      "flash_sale",
+                      "vip"
+                    ],
                     "post_order_action": {
                       "action_date": null,
                       "action_type": ""
@@ -2591,6 +2913,9 @@
                       1
                     ]
                   },
+                  "filter_tags": [
+                    "flash_sale"
+                  ],
                   "auto_apply": true
                 }
               }
@@ -2934,6 +3259,10 @@
                       1
                     ]
                   },
+                  "filter_tags": [
+                    "flash_sale",
+                    "vip"
+                  ],
                   "auto_apply": true
                 }
               }
@@ -3096,7 +3425,8 @@
                       "entity_type": "promotion",
                       "type": "percentage",
                       "created_on": "2022-05-30T07:33:01.303Z",
-                      "modified_on": "2022-05-31T10:41:01.441Z"
+                      "modified_on": "2022-05-31T10:41:01.441Z",
+                      "discount_type": "percentage"
                     }
                   ]
                 }
@@ -5277,6 +5607,110 @@
         ]
       }
     },
+    "/service/platform/cart/v1.0/company/{company_id}/application/{application_id}/serviceability/cod": {
+      "post": {
+        "summary": "checkCODServiceability | Check COD serviceability and charges for cart",
+        "description": "Check whether Cash on Delivery (COD) is available for the given cart items at a specific pin code, and return the applicable COD charges. Performs a pincode-level serviceability check via the logistics layer and computes COD fee based on cart value and payment configuration.",
+        "tags": [
+          "Cart"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformCartCODServiceabilityCreation"
+              },
+              "example": {
+                "shipping_address": {
+                  "name": "Test User",
+                  "address": "Test adddress",
+                  "area": "test",
+                  "phone": 999999999,
+                  "area_code": "400093",
+                  "area_code_slug": "pincode",
+                  "city": "Mumbai",
+                  "state": "Maharastra",
+                  "country": "India",
+                  "email": "test@example.com",
+                  "address_type": "office"
+                },
+                "cart_items": [
+                  {
+                    "product_id": "803140",
+                    "size": "S"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cart details with COD availability and charges at pincode level",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformCartCODServiceabilityResult"
+                },
+                "examples": {
+                  "COD available": {
+                    "value": {
+                      "is_valid": true,
+                      "is_cod_available": true,
+                      "breakup_values": {
+                        "raw": {
+                          "cod_charge": 50,
+                          "subtotal": 1299,
+                          "total": 1349,
+                          "currency_code": "INR"
+                        }
+                      }
+                    }
+                  },
+                  "COD not available": {
+                    "value": {
+                      "is_valid": true,
+                      "is_cod_available": false,
+                      "breakup_values": {
+                        "raw": {
+                          "cod_charge": 0,
+                          "subtotal": 1299,
+                          "total": 1299,
+                          "currency_code": "INR"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Current company id",
+            "in": "path",
+            "required": true,
+            "name": "company_id"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Current Application id of sales channel",
+            "in": "path",
+            "required": true,
+            "name": "application_id"
+          }
+        ],
+        "x-groups": [
+          "Cart"
+        ]
+      }
+    },
     "/service/platform/cart/v1.0/company/{company_id}/application/{application_id}/cart/checkout": {
       "post": {
         "summary": "checkoutCart | Headless Checkout",
@@ -6022,7 +6456,8 @@
                         }
                       },
                       "message": "",
-                      "quantity": 1
+                      "quantity": 1,
+                      "added_on": "Tue, 28 Jun 2022 14:47:12 GMT"
                     }
                   ],
                   "buy_now": false,
@@ -11809,6 +12244,7 @@
                       "is_applicable": true,
                       "is_applied": false,
                       "expires_on": "28 Aug, 19",
+                      "expires_at": "2026-01-24T00:00:00.000Z",
                       "rule": [
                         {
                           "discounted_price": 90
@@ -11827,6 +12263,7 @@
                       "is_applicable": true,
                       "is_applied": false,
                       "expires_on": "24 Jan, 20",
+                      "expires_at": "2026-01-24T00:00:00.000Z",
                       "rule": [
                         {
                           "discounted_price": 90
@@ -15453,6 +15890,10 @@
               "example": {
                 "checkout_mode": "self",
                 "gstin": "27AAPFU0939F1ZV",
+                "ship_to_gst_details": {
+                  "gstin": "27AAPFU0939F1ZV",
+                  "trade_name": "XYZ Traders"
+                },
                 "comment": "Leave it with neighbour",
                 "pan_no": "AAPFU0939F",
                 "gift_details": {
@@ -17554,7 +17995,8 @@
                 "review",
                 "rejected",
                 "live",
-                "published"
+                "unpublished",
+                "not_live"
               ]
             }
           },
@@ -17572,6 +18014,14 @@
             "in": "query",
             "schema": {
               "type": "boolean"
+            }
+          },
+          {
+            "name": "filter_tags",
+            "in": "query",
+            "description": "Filter by filter tag. Repeat this query parameter for multiple values (e.g. `?filter_tags=homepage&filter_tags=special`) or pass a comma-separated value. Entities matching any provided tag are returned (OR).",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -17611,17 +18061,14 @@
                           },
                           "_schedule": {
                             "end": null,
-                            "next_schedule": [
-                              {
-                                "start": "2025-10-03T05:46:31.350Z",
-                                "end": null
-                              }
-                            ],
                             "start": null,
                             "cron": null,
                             "duration": 0
                           },
-                          "mode": "promotion"
+                          "mode": "promotion",
+                          "filter_tags": [
+                            "homepage"
+                          ]
                         },
                         {
                           "_id": "68deff69f55b3b2cdd063831",
@@ -17648,19 +18095,16 @@
                           },
                           "_schedule": {
                             "end": "2025-10-03T18:30:00.000Z",
-                            "next_schedule": [
-                              {
-                                "start": "2025-10-02T22:27:59.000Z",
-                                "end": "2025-10-03T18:30:00.000Z"
-                              }
-                            ],
                             "start": "2025-10-02T22:27:59.000Z",
                             "cron": null,
                             "duration": 0
                           },
                           "mode": "promotion",
                           "published": true,
-                          "status": "approved"
+                          "status": "approved",
+                          "filter_tags": [
+                            "special_banner"
+                          ]
                         }
                       ],
                       "page": {
@@ -17751,6 +18195,10 @@
                     },
                     "published": true,
                     "status": "approved",
+                    "filter_tags": [
+                      "special_banner",
+                      "discover"
+                    ],
                     "buy_rules": {
                       "rule#1": {
                         "all_items": true,
@@ -17799,6 +18247,10 @@
                     "stackable": true,
                     "type": "percentage",
                     "promo_group": "product",
+                    "filter_tags": [
+                      "checkout",
+                      "loyalty"
+                    ],
                     "display_meta": {
                       "name": "coupon schema",
                       "offer_text": "coupon schema example",
@@ -17985,24 +18437,6 @@
                         }
                       },
                       "_schedule": {
-                        "next_schedule": [
-                          {
-                            "start": "2025-12-18T04:30:00.000Z",
-                            "end": "2025-12-18T16:31:00.000Z"
-                          },
-                          {
-                            "start": "2025-12-19T04:30:00.000Z",
-                            "end": "2025-12-19T16:31:00.000Z"
-                          },
-                          {
-                            "start": "2025-12-20T04:30:00.000Z",
-                            "end": "2025-12-20T16:31:00.000Z"
-                          },
-                          {
-                            "start": "2025-12-21T04:30:00.000Z",
-                            "end": "2025-12-21T16:31:00.000Z"
-                          }
-                        ],
                         "duration": 43260,
                         "cron": "0 10 * * *",
                         "end": "2025-12-21T16:31:00.000Z",
@@ -18132,20 +18566,6 @@
                         }
                       },
                       "_schedule": {
-                        "next_schedule": [
-                          {
-                            "start": "2025-12-19T07:30:00.000Z",
-                            "end": "2025-12-19T11:31:00.000Z"
-                          },
-                          {
-                            "start": "2025-12-20T07:30:00.000Z",
-                            "end": "2025-12-20T11:31:00.000Z"
-                          },
-                          {
-                            "start": "2025-12-21T07:30:00.000Z",
-                            "end": "2025-12-21T11:31:00.000Z"
-                          }
-                        ],
                         "duration": 14460,
                         "cron": "0 13 * * *",
                         "end": "2025-12-21T11:31:00.000Z",
@@ -18242,12 +18662,6 @@
                   "_id": "69352d6ab74c8babae11ac2a",
                   "_schedule": {
                     "start": "2025-12-07T19:30:00.000Z",
-                    "next_schedule": [
-                      {
-                        "start": "2025-12-07T19:30:00.000Z",
-                        "end": "2025-12-31T06:31:00.000Z"
-                      }
-                    ],
                     "cron": null,
                     "duration": 39660,
                     "end": "2025-12-31T06:31:00.000Z"
@@ -18342,7 +18756,10 @@
                   },
                   "calculate_on": "esp",
                   "auto_apply": false,
-                  "is_processed": true
+                  "is_processed": true,
+                  "filter_tags": [
+                    "special_banner"
+                  ]
                 }
               }
             }
@@ -18416,12 +18833,6 @@
                 "promo_group": "product",
                 "_schedule": {
                   "start": "2025-12-07T19:30:00.000Z",
-                  "next_schedule": [
-                    {
-                      "start": "2025-12-07T19:30:00.000Z",
-                      "end": "2025-12-31T06:31:00.000Z"
-                    }
-                  ],
                   "cron": null,
                   "duration": 39660,
                   "end": "2025-12-31T06:31:00.000Z"
@@ -18511,7 +18922,11 @@
                 },
                 "calculate_on": "esp",
                 "auto_apply": false,
-                "is_processed": true
+                "is_processed": true,
+                "filter_tags": [
+                  "special_banner",
+                  "updated_tag"
+                ]
               }
             }
           }
@@ -18533,12 +18948,6 @@
                   "promo_group": "product",
                   "apply_all_discount": false,
                   "_schedule": {
-                    "next_schedule": [
-                      {
-                        "start": "2025-12-07T19:30:00.000Z",
-                        "end": "2025-12-31T06:31:00.000Z"
-                      }
-                    ],
                     "duration": 39660,
                     "cron": null,
                     "end": "2025-12-31T06:31:00.000Z",
@@ -22906,6 +23315,20 @@
                 ]
               }
             }
+          },
+          {
+            "description": "When true, returns only locations that have at least one document with verified set to true. Locations with an empty documents array are excluded.",
+            "in": "query",
+            "name": "opted",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "success": {
+                "value": true
+              }
+            }
           }
         ],
         "responses": {
@@ -24084,6 +24507,7 @@
             "schema": {
               "type": "integer"
             },
+            "x-fdk-path-encode": true,
             "examples": {
               "success": {
                 "value": 410163085004
@@ -27246,6 +27670,7 @@
             "schema": {
               "type": "string"
             },
+            "x-fdk-path-encode": true,
             "examples": {
               "success": {
                 "value": "5645463"
@@ -33577,6 +34002,7 @@
             "schema": {
               "type": "string"
             },
+            "x-fdk-path-encode": true,
             "examples": {
               "success": {
                 "value": "Test4M"
@@ -33603,6 +34029,7 @@
                         "store_id": 117098,
                         "price_marked": 800,
                         "price_effective": 800,
+                        "price_cost": 7.99,
                         "expiration_date": "9998-01-30T18:29:00.000Z",
                         "total_quantity": 10
                       }
@@ -33734,6 +34161,7 @@
             "schema": {
               "type": "string"
             },
+            "x-fdk-path-encode": true,
             "examples": {
               "success": {
                 "value": "TEST4M"
@@ -33760,6 +34188,7 @@
                         "store_id": 117098,
                         "price_marked": 800,
                         "price_effective": 800,
+                        "price_cost": 7.99,
                         "expiration_date": "9998-01-30T18:29:00.000Z",
                         "total_quantity": 10
                       }
@@ -33876,7 +34305,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "x-fdk-path-encode": true
           }
         ],
         "requestBody": {
@@ -33969,7 +34399,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "x-fdk-path-encode": true
           }
         ],
         "requestBody": {
@@ -55934,6 +56365,17 @@
                         }
                       ]
                     }
+                  },
+                  "Last Active Zone": {
+                    "value": {
+                      "error": [
+                        {
+                          "type": "SchemaValidationError",
+                          "value": "is_active",
+                          "message": "At least one active zone is required for Restrict to Zones strategy."
+                        }
+                      ]
+                    }
                   }
                 }
               }
@@ -56036,6 +56478,17 @@
                           "type": "ZoneNotFoundError",
                           "value": "zone not found",
                           "message": "64aec5a93a079bd328537830."
+                        }
+                      ]
+                    }
+                  },
+                  "Last Active Zone": {
+                    "value": {
+                      "error": [
+                        {
+                          "type": "ZoneNotFoundError",
+                          "value": "zone",
+                          "message": "At least one active zone is required for Restrict to Zones strategy. Change strategy to 'Ship to All' to remove all zones."
                         }
                       ]
                     }
@@ -61838,6 +62291,95 @@
         }
       }
     },
+    "/service/platform/logistics/v1.0/company/{company_id}/optimal-locations": {
+      "post": {
+        "summary": "getOptimalLocations | Get selling locations",
+        "description": "Retrieves a list of selling locations that are optimally suited to fulfill a customer's order, based on product availability and other fulfillment criteria.",
+        "tags": [
+          "Serviceability"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "description": "Unique identifier of the company.",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "examples": {
+              "Success": {
+                "value": 123
+              },
+              "FaultyArticles": {
+                "value": 123
+              },
+              "Failure": {
+                "value": 123
+              }
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OptimlLocationsRequestSchema"
+              },
+              "examples": {
+                "Success": {
+                  "$ref": "#/components/examples/OptimalLocationsSuccessRequestSchema"
+                },
+                "FaultyArticles": {
+                  "$ref": "#/components/examples/OptimalLocationFaultySuccessRequestSchema"
+                },
+                "Failure": {
+                  "$ref": "#/components/examples/OptimalLocationsFailureRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Optimal Locations Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptimalLocationsResult"
+                },
+                "examples": {
+                  "Success": {
+                    "$ref": "#/components/examples/OptimalLocationsSuccessResponse"
+                  },
+                  "FaultyArticles": {
+                    "$ref": "#/components/examples/OptimalLocationsFaultyArticleResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Optimal Locations Failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResult"
+                },
+                "examples": {
+                  "Failure": {
+                    "$ref": "#/components/examples/OptimalLocationsFailureResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Selling Location"
+        ]
+      }
+    },
     "/service/platform/logistics/v2.0/company/{company_id}/courier-partner/scheme": {
       "post": {
         "summary": "createCourierPartnerScheme | Create Scheme for courier partner extension",
@@ -64908,6 +65450,144 @@
         ]
       }
     },
+    "/service/platform/logistics/v2.0/company/{company_id}/application/{application_id}/zones/bulk/products/patch": {
+      "post": {
+        "summary": "patchZoneProductsAtomic | Atomically add or remove products on zones (concurrency-safe)",
+        "description": "Synchronously adds or removes products on one or more zones. Each item is applied with an atomic MongoDB array operator (`$addToSet` for add, `$pull` for remove) rather than a read-modify-write of the whole product list, so concurrent writes to the same zone never lose each other's changes. `product_type` must match the existing zone's product type. Product ids are not validated against the catalog (this is a synchronous API; callers send already-known ids). Returns a per-item status and a summary; per-item failures (e.g. zone not found, product type mismatch) do not fail the whole request.",
+        "tags": [
+          "Serviceability"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ZoneProductsAtomicPatchDetails"
+              },
+              "examples": {
+                "Zone Products Atomic Patch": {
+                  "value": {
+                    "items": [
+                      {
+                        "zone_id": "65f2f36dcf9ffae64b112646",
+                        "product_type": "item_id",
+                        "values": [
+                          7501234,
+                          7501235
+                        ],
+                        "action": "add"
+                      },
+                      {
+                        "zone_id": "65f2f36dcf9ffae64b112646",
+                        "product_type": "tag",
+                        "values": [
+                          "clearance"
+                        ],
+                        "action": "remove"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "description": "The unique identifier for the company.",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "examples": {
+              "Zone Products Atomic Patch": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "in": "path",
+            "name": "application_id",
+            "description": "A `application_id` is a unique identifier for a particular sale channel.",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "examples": {
+              "Zone Products Atomic Patch": {
+                "value": "64aec5a93a079bd328537835"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-item results and summary of the atomic products patch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ZoneProductsAtomicPatchResult"
+                },
+                "examples": {
+                  "Zone Products Atomic Patch": {
+                    "value": {
+                      "items": [
+                        {
+                          "zone_id": "65f2f36dcf9ffae64b112646",
+                          "product_type": "item_id",
+                          "action": "add",
+                          "status": "success",
+                          "values_count": 42
+                        },
+                        {
+                          "zone_id": "65f2f36dcf9ffae64b112646",
+                          "product_type": "tag",
+                          "action": "remove",
+                          "status": "success",
+                          "values_count": 5
+                        }
+                      ],
+                      "summary": {
+                        "total": 2,
+                        "success": 2,
+                        "failed": 0
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. The request body failed schema validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommonErrorResult"
+                },
+                "examples": {
+                  "Zone Products Atomic Patch Validation Error": {
+                    "value": {
+                      "error": [
+                        {
+                          "type": "ZoneNotFoundError",
+                          "value": "items",
+                          "message": "Missing data for required field."
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Delivery Zone"
+        ]
+      }
+    },
     "/service/platform/order-manage/v1.0/company/{company_id}/store/reassign-internal": {
       "post": {
         "description": "Reassign the shipment to a another location and update its status to 'Store Reassigned.'",
@@ -67513,7 +68193,7 @@
     "/service/platform/order-manage/v1.0/company/{company_id}/orders": {
       "post": {
         "summary": "createOrder | Create Order",
-        "description": "Creates an order in the OMS. Note: Use the Serviceability API (<a href='/commerce/sdk/latest/platform/company/serviceability#createShipments'>createShipments</a>) to determine shipments before creating an order.",
+        "description": "Creates an order in the Order Management System (OMS). You can use <a href='https://docs.fynd.com/partners/commerce/sdk/latest/platform/company/serviceability#getOptimalLocations'>getOptimalLocations</a> (optional) to identify the most suitable fulfilment location and <a href='https://docs.fynd.com/partners/commerce/sdk/latest/platform/application/serviceability#createShipments'>createShipments</a> (optional) to create shipments before creating the order.  See the <a href='https://docs.fynd.com/partners/commerce/miscellaneous/createOrder-useCases'>Create Order use-case</a> document for various order creation scenarios to accommodate different business requirements and customer needs.",
         "tags": [
           "Order"
         ],
@@ -69174,6 +69854,242 @@
                     "primary_payment_mode": "Paytm"
                   },
                   "summary": "Create Order with Order, Shipment and Line Item Meta"
+                },
+                "Create Order with Charges": {
+                  "value": {
+                    "shipments": [
+                      {
+                        "type": "HomeDelivery",
+                        "line_items": [
+                          {
+                            "seller_identifier": "EWQRD2QW",
+                            "monetary_values": {
+                              "amount_paid": 7,
+                              "price_effective": 2,
+                              "price_marked": 2
+                            },
+                            "quantity": 1,
+                            "charges": [
+                              {
+                                "name": "Packaging Fee",
+                                "amount": 5,
+                                "refundable": false,
+                                "tax_rule_id": "64a1f0c2e1b2c30012a4d5e6"
+                              }
+                            ],
+                            "payment_methods": [
+                              {
+                                "gateway": {
+                                  "name": "Zomato",
+                                  "logo": "http://localhost:81/v1.0/company/33708/orders"
+                                },
+                                "mode_of_payment": {
+                                  "slug": "name",
+                                  "name": "Prepaid"
+                                },
+                                "payment_identifier": "553224562",
+                                "amount_paid": 7,
+                                "transaction_party": {
+                                  "refund_bearer": "Fynd",
+                                  "collection_bearer": "Fynd"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "location_id": 107995
+                      }
+                    ],
+                    "charges": [
+                      {
+                        "name": "Delivery Charge",
+                        "amount": 50,
+                        "refundable": false,
+                        "distribution": "apportion"
+                      },
+                      {
+                        "name": "COD Charge",
+                        "amount": 20,
+                        "refundable": false,
+                        "distribution": "equally"
+                      }
+                    ],
+                    "currency_details": {
+                      "ordering_currency": {
+                        "currency_code": "INR",
+                        "currency_symbol": "₹"
+                      },
+                      "conversion_rate": {
+                        "rate": 1,
+                        "timestamp_ms": 1112057
+                      }
+                    },
+                    "billing_details": {
+                      "first_name": "Shubham",
+                      "country": "India",
+                      "city": "North Nyasia",
+                      "pincode": "400001",
+                      "last_name": "",
+                      "mobile_number": "1111111111",
+                      "email": "1111111111@example.com",
+                      "state": "Maharashtra",
+                      "address_type": "Home",
+                      "geo_location": {
+                        "latitude": -11.7932,
+                        "longitude": -35.3855
+                      },
+                      "address1": "Delhi NCR",
+                      "country_iso_code": "IN"
+                    },
+                    "cp_configuration": {
+                      "shipping_by": "Fynd"
+                    },
+                    "channel_location_id": 107993,
+                    "order_platform": "sint",
+                    "allow_location_reassignment": true,
+                    "shipping_details": {
+                      "first_name": "Shubham",
+                      "country": "India",
+                      "city": "North Nyasia",
+                      "pincode": "400001",
+                      "last_name": "",
+                      "mobile_number": "1111111111",
+                      "email": "1111111111@example.com",
+                      "state": "Maharashtra",
+                      "address_type": "Office",
+                      "geo_location": {
+                        "latitude": -11.7932,
+                        "longitude": -35.3855
+                      },
+                      "address1": "Delhi NCR",
+                      "country_iso_code": "IN"
+                    },
+                    "user_details": {
+                      "user_oid": null
+                    },
+                    "primary_payment_mode": "Paytm"
+                  },
+                  "summary": "Create Order with order-level and line-item charges"
+                },
+                "Create Cross-Currency (Export) Order": {
+                  "value": {
+                    "shipments": [
+                      {
+                        "type": "HomeDelivery",
+                        "line_items": [
+                          {
+                            "seller_identifier": "25MAR2023TESTING",
+                            "monetary_values": {
+                              "amount_paid": 90,
+                              "price_effective": 80,
+                              "price_marked": 100,
+                              "discount": 20,
+                              "delivery_charges": 10
+                            },
+                            "quantity": 1,
+                            "payment_methods": [
+                              {
+                                "gateway": {
+                                  "name": "Razorpay",
+                                  "logo": "http://localhost:81/v1.0/company/33708/orders"
+                                },
+                                "mode_of_payment": {
+                                  "slug": "name",
+                                  "name": "Prepaid"
+                                },
+                                "payment_identifier": "553224562",
+                                "amount_paid": 90,
+                                "transaction_party": {
+                                  "refund_bearer": "Fynd",
+                                  "collection_bearer": "Fynd"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "location_id": 17
+                      }
+                    ],
+                    "currency_details": {
+                      "ordering_currency": {
+                        "currency_code": "USD",
+                        "currency_symbol": "$"
+                      },
+                      "conversion_rate": {
+                        "rate": 80,
+                        "timestamp_ms": 1112057
+                      }
+                    },
+                    "billing_details": {
+                      "first_name": "Jordan",
+                      "last_name": "Blake",
+                      "middle_name": "",
+                      "title": "",
+                      "gender": "male",
+                      "mobile_number": "2025550143",
+                      "alternate_mobile_number": "",
+                      "email": "jordan.blake@example.com",
+                      "alternate_email": "",
+                      "address": "",
+                      "address1": "350 Fifth Avenue",
+                      "address2": "",
+                      "house_no": "",
+                      "floor_no": "",
+                      "landmark": "",
+                      "city": "New York",
+                      "state": "New York",
+                      "state_code": "",
+                      "country": "United States",
+                      "country_iso_code": "US",
+                      "pincode": "10001",
+                      "address_type": "Home",
+                      "geo_location": {
+                        "latitude": 40.7128,
+                        "longitude": -74.006
+                      }
+                    },
+                    "shipping_details": {
+                      "first_name": "Jordan",
+                      "last_name": "Blake",
+                      "middle_name": "",
+                      "title": "",
+                      "gender": "male",
+                      "mobile_number": "2025550143",
+                      "alternate_mobile_number": "",
+                      "email": "jordan.blake@example.com",
+                      "alternate_email": "",
+                      "address": "",
+                      "address1": "350 Fifth Avenue",
+                      "address2": "",
+                      "house_no": "",
+                      "floor_no": "",
+                      "landmark": "",
+                      "area_code_slug": "",
+                      "city": "New York",
+                      "state": "New York",
+                      "state_code": "",
+                      "country": "United States",
+                      "country_phone_code": "",
+                      "country_iso_code": "US",
+                      "pincode": "10001",
+                      "address_type": "Office",
+                      "geo_location": {
+                        "latitude": 40.7128,
+                        "longitude": -74.006
+                      }
+                    },
+                    "cp_configuration": {
+                      "shipping_by": "Fynd"
+                    },
+                    "channel_location_id": 161149,
+                    "order_platform": "sint",
+                    "allow_location_reassignment": true,
+                    "user_details": {
+                      "user_oid": null
+                    },
+                    "primary_payment_mode": "Paytm"
+                  },
+                  "summary": "Create an order priced in a currency other than the seller's, the shape an export order takes. Everything inside monetary_values, and every payment method amount_paid, is PER UNIT and in the ORDERING currency (USD here) -- do not convert any of them yourself. conversion_rate.rate is seller-currency units per ONE ordering-currency unit, so 80 means 80 INR per USD; the platform stores both the ordering figures and the seller-currency ones it derives from that rate. The seller's own currency is never sent in the payload: it comes from the gateway-injected seller details header. is_export_shipment and is_international are likewise derived, from the delivery country against the seller company's, so leave them out."
                 }
               }
             }
@@ -71015,6 +71931,31 @@
               "type": "string",
               "example": "68e7a15429f2a988886094d3,68e7a15429f2a988886094d4"
             }
+          },
+          {
+            "in": "query",
+            "name": "include_count",
+            "description": "Set to false to skip computing the total number of matching shipments. `total_count` and `page.total` are then returned as -1; use `page.has_next` to paginate. The total can be fetched separately from the listing/count API (`GET /service/platform/order/v1.0/company/{company_id}/listing/count/`).",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "instore_return_lookup",
+            "description": "Find orders and shipments across stores for in-store returns. Requires return_instore permission for store-limited users. When false or omitted, existing visibility is unchanged.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -71115,6 +72056,16 @@
                 "value": false
               }
             }
+          },
+          {
+            "in": "query",
+            "name": "instore_return_lookup",
+            "description": "Find orders and shipments across stores for in-store returns. Requires return_instore permission for store-limited users. When false or omitted, existing visibility is unchanged.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -71180,6 +72131,16 @@
             "in": "query",
             "name": "allow_inactive",
             "description": "Flag to allow inactive shipments",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "in": "query",
+            "name": "instore_return_lookup",
+            "description": "Find orders and shipments across stores for in-store returns. Requires return_instore permission for store-limited users. When false or omitted, existing visibility is unchanged.",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -72475,6 +73436,26 @@
               "type": "string",
               "example": "68e7a15429f2a988886094d3,68e7a15429f2a988886094d4"
             }
+          },
+          {
+            "in": "query",
+            "name": "include_count",
+            "description": "Set to false to skip computing the total number of matching orders. `total_count` and `page.total` are then returned as -1; use `page.has_next` to paginate. The total can be fetched separately from the listing/count API (`GET /service/platform/order/v1.0/company/{company_id}/listing/count/`).",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "in": "query",
+            "name": "instore_return_lookup",
+            "description": "Find orders and shipments across stores for in-store returns. Requires return_instore permission for store-limited users. When false or omitted, existing visibility is unchanged.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
@@ -72493,6 +73474,554 @@
           "Order"
         ],
         "summary": "getOrders | List orders"
+      }
+    },
+    "/service/platform/order/v1.0/company/{company_id}/listing/count/": {
+      "get": {
+        "description": "Get the total number of shipments or orders matching the given filters. Companion to the shipments-listing and orders-listing APIs when they are called with `include_count=false`: the listing skips computing the total and this API returns it separately. Accepts the same filter query parameters as the listing APIs; pass the same values that were sent to the listing call.",
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "company_id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Unique identifier of a company on the platform.",
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_entity",
+            "description": "Whether to count shipments or orders. Must match the group_entity of the listing API whose count is being fetched.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "shipments",
+                "orders"
+              ],
+              "default": "shipments"
+            },
+            "examples": {
+              "success": {
+                "value": "shipments"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "parent_view_slug",
+            "description": "Slug of the parent view the count is for. Used internally while resolving the request; not returned in the response.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "unfulfilled"
+            }
+          },
+          {
+            "in": "query",
+            "name": "child_view_slug",
+            "description": "Slug of the child view (lane) the count is for. Used internally while resolving the request; not returned in the response.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "new"
+            }
+          },
+          {
+            "in": "query",
+            "name": "bag_status",
+            "description": "Comma separated values of bag statuses.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "placed, bag_confirmed, bag_invoiced"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "status_assigned",
+            "description": "Used to filter shipments based on status present in shipment_status_history. For more information on these statuses, refer to the Fynd Partners documentation.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "return_initiated"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "time_to_dispatch",
+            "required": false,
+            "description": "Indicates the time to dispatch.",
+            "schema": {
+              "type": "integer",
+              "enum": [
+                1,
+                -1
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": 1
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "search_type",
+            "description": "Specifies the key used to determine the type of search being performed.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "shipment_id",
+                "order_id",
+                "channel_name",
+                "fynd_order_id"
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": "shipment_id"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "search_value",
+            "description": "The value corresponding to the search type, such as a specific shipment ID or order ID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "16578901076461551493K"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "from_date",
+            "description": "Start Date in DD-MM-YYYY format",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-05-10"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "to_date",
+            "description": "End Date in DD-MM-YYYY format",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-05-10"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "start_date",
+            "description": "The UTC start date in ISO format (YYYY-MM-DDTHH:MM:SSZ) for filtering results.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-08-21T09:48:40.000Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "end_date",
+            "description": "The UTC end date in ISO format (YYYY-MM-DDTHH:MM:SSZ) for filtering results.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "success": {
+                "value": "2023-08-21T09:48:40.000Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "status_assigned_start_date",
+            "description": "Specifies the starting UTC date and time (in ISO format, YYYY-MM-DDTHH:MM:SSZ) to define the lower boundary for filtering shipments based on the `created_at` timestamp of statuses in the shipment's status history. It allows filtering statuses that were created within a  specific time range.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "success": {
+                "value": "2024-10-07T18:30:00.000Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "status_assigned_end_date",
+            "description": "Specifies the ending UTC date and time (in ISO format, YYYY-MM-DDTHH:MM:SSZ) to define the  upper boundary for filtering shipments based on the `created_at` timestamp of statuses  in the shipment's status history.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "examples": {
+              "status_assigned_end_date": {
+                "value": "2024-11-07T18:29:59.999Z"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "dp_ids",
+            "description": "A comma-separated list of delivery partner IDs to filter results by specific delivery partners.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "19,26"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "stores",
+            "description": "A comma-separated list of store IDs used to filter results to only those related to specific stores.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "19,26"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "sales_channels",
+            "description": "A comma-separated list of sales channel IDs to filter results based on the sales channels involved.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "000000000000000000000001,614b42d1ea943427b5f46d1e"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "fetch_active_shipment",
+            "description": "A boolean flag that indicates whether to include only active shipments in the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "allow_inactive",
+            "description": "A flag indicating whether to allow the inclusion of inactive shipments in the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "exclude_locked_shipments",
+            "description": "A flag to specify whether to exclude shipments that are locked from the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "examples": {
+              "success": {
+                "value": true
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "payment_methods",
+            "description": "A comma-separated list of payment methods.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "COD,PREPAID"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "channel_shipment_id",
+            "description": "The shipment ID used in the application, which can be used to reference specific shipments.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "16731535496121004000"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "channel_order_id",
+            "description": "The order ID used in the application.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "FY63BA4C0D0125F8A075"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "company_affiliate_tag",
+            "required": false,
+            "description": "A tag used to identify the company's affiliation for filtering or reporting purposes.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "company tag"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "my_orders",
+            "required": false,
+            "description": "A boolean flag indicating whether the query should return only the user's orders.",
+            "schema": {
+              "type": "boolean"
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "platform_user_id",
+            "required": false,
+            "description": "The unique identifier of the user on the platform, useful for filtering orders related to a specific user.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "AKFBAD9C3DEC9EB773"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "show_cross_company_data",
+            "description": "A flag indicating whether to include data from both cross-company and non-cross-company orders in the results.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "tags",
+            "description": "A comma-separated list of tags associated with the orders to filter results based on specific characteristics.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "gifting,international"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "customer_id",
+            "description": "The unique identifier for the customer associated with the query, useful for filtering results to a specific customer.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "success": {
+                "value": "63a2ce177e9f59d3166dd700"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_type",
+            "description": "The type of order being queried.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "HomeDelivery",
+              "enum": [
+                "HomeDelivery",
+                "PickAtStore",
+                "Digital"
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": "HomeDelivery"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "enforce_date_filter",
+            "description": "Applies a date filter for listing shipments. This is useful when fetching data  for a specific date range while performing searches.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "examples": {
+              "success": {
+                "value": false
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "fulfillment_type",
+            "description": "Define the Fulfillment Type for Listing Orders, This is use when we want to get list of shipments or orders by cross store or cross company or fulfilling Store (by default), this is also depends on the login user accessType and store access",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "FULFILLMENT",
+              "enum": [
+                "FULFILLMENT",
+                "CROSS_STORE",
+                "CROSS_COMPANY"
+              ]
+            },
+            "examples": {
+              "success": {
+                "value": "FULFILLMENT"
+              }
+            }
+          },
+          {
+            "in": "query",
+            "name": "ordering_source",
+            "description": "Filter orders by ordering source. Accepts comma-separated values for multiple sources.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "gofynd"
+            }
+          },
+          {
+            "in": "query",
+            "name": "channel_account_id",
+            "description": "Comma-separated channel account IDs to filter orders by specific channel accounts.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "68e7a15429f2a988886094d3,68e7a15429f2a988886094d4"
+            }
+          },
+          {
+            "in": "query",
+            "name": "instore_return_lookup",
+            "description": "Find orders and shipments across stores for in-store returns. Requires return_instore permission for store-limited users. When false or omitted, existing visibility is unchanged.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Count of records matching the view and filters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingCountResponseSchema"
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Shipment"
+        ],
+        "summary": "getListingCount | Get listing count"
       }
     },
     "/service/platform/order/v1.0/company/{company_id}/application/{application_id}/shipments/": {
@@ -75243,6 +76772,123 @@
         ]
       }
     },
+    "/service/platform/payment/v1.0/company/{company_id}/application/{application_id}/payment/order/meta": {
+      "put": {
+        "summary": "updateOrderMeta | Update order metadata",
+        "description": "Update metadata associated with a payment order. Use this to set or update PAN (Permanent Account Number) for an order.",
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "description": "Company Id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "description": "Application id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "The unique identifier of the order (merchant_order_id).",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "description": "pan_no: Valid Indian PAN (5 letters, 4 digits, 1 letter). Required when updating order meta for PAN. Example: AAAAA9999A.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrderMetaUpdate"
+              },
+              "example": {
+                "pan_no": "AAAAA9999A"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns a message indicating the success of order meta updation as shown below.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderMetaResult"
+                },
+                "example": {
+                  "message": "order meta updated"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid order_id / pan_no, order not found, order already completed, or invalid PAN format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderMetaErrorResult"
+                },
+                "examples": {
+                  "missing_order_id": {
+                    "summary": "Missing order_id",
+                    "value": {
+                      "success": false,
+                      "message": "order_id is required."
+                    }
+                  },
+                  "missing_pan_no": {
+                    "summary": "Missing pan_no",
+                    "value": {
+                      "success": false,
+                      "message": "pan_no is required."
+                    }
+                  },
+                  "invalid_pan": {
+                    "summary": "Invalid PAN format",
+                    "value": {
+                      "success": false,
+                      "message": "Invalid PAN format. PAN must be 5 letters, 4 digits, 1 letter (e.g. AAAAA9999A)."
+                    }
+                  },
+                  "order_not_found": {
+                    "summary": "Order not found",
+                    "value": {
+                      "success": false,
+                      "message": "Order with id FY123 not found."
+                    }
+                  },
+                  "order_completed": {
+                    "summary": "Payment already done",
+                    "value": {
+                      "success": false,
+                      "message": "Payment is already done for the order: FY123."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-groups": [
+          "Payment",
+          "Order"
+        ],
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
     "/service/platform/payment/v1.0/company/{company_id}/application/{application_id}/payment/validate/customer-credits": {
       "post": {
         "summary": "validateCustomerAndCreditSummary | Verify payment customer and show credit summary",
@@ -75480,6 +77126,96 @@
         "tags": [
           "Payment"
         ]
+      }
+    },
+    "/service/platform/payment/v1.0/company/{company_id}/application/{application_id}/orders/{order_id}/transactions": {
+      "get": {
+        "summary": "getOrderTransactions | List all transactions for an order",
+        "x-groups": [
+          "Payment"
+        ],
+        "description": "Returns all payment transactions associated with the given order ID, ordered by creation timestamp ascending. Each entry includes the merchant transaction ID, payment mode name, logo URL (small, falling back to large), transaction amount, latest status, and creation timestamp.",
+        "tags": [
+          "Payment"
+        ],
+        "parameters": [
+          {
+            "name": "company_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique numeric identifier of the company (seller).",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "example": 1
+            }
+          },
+          {
+            "name": "application_id",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the sales channel (application).",
+            "schema": {
+              "type": "string",
+              "example": "000000000000000000000001"
+            }
+          },
+          {
+            "name": "order_id",
+            "in": "path",
+            "required": true,
+            "description": "Merchant order ID (e.g. FY692D2AC45171FB895B).",
+            "schema": {
+              "type": "string",
+              "example": "FY692D2AC45171FB895B"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions for the order.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderTransactionList"
+                },
+                "example": {
+                  "success": true,
+                  "items": [
+                    {
+                      "transaction_id": "TR692D2BC451FA77D8GF",
+                      "payment_mode": "UPI",
+                      "logo": "https://cdn.fynd.com/payment/upi_small.png",
+                      "amount": 499,
+                      "status": "complete",
+                      "created_on": "2024-01-15T10:30:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request. Returned when path parameters are invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": false
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid order_id."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/service/platform/share/v1.0/company/{company_id}/application/{application_id}/links/short-link/": {
@@ -81742,138 +83478,6 @@
   },
   "components": {
     "schemas": {
-      "Page": {
-        "type": "object",
-        "description": "An object representing a page with pagination details.",
-        "properties": {
-          "item_total": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The total number of all items across all pages.",
-            "example": 10
-          },
-          "next_id": {
-            "type": "string",
-            "description": "The identifier for the next page.",
-            "example": "abc123"
-          },
-          "has_previous": {
-            "type": "boolean",
-            "description": "Indicates whether there is a previous page.",
-            "example": true
-          },
-          "has_next": {
-            "type": "boolean",
-            "description": "Indicates whether there is a next page.",
-            "example": false
-          },
-          "current": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The current page number.",
-            "example": 1
-          },
-          "type": {
-            "type": "string",
-            "description": "The type of the page, can be 'cursor' or 'number'.",
-            "example": "cursor"
-          },
-          "size": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The number of items per page.",
-            "example": 20
-          },
-          "page_size": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The number of items per page.",
-            "example": 20
-          }
-        },
-        "required": [
-          "type"
-        ]
-      },
-      "FileDownloadRequestBody": {
-        "type": "object",
-        "required": [
-          "query"
-        ],
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Base64 encoded SQL query to execute on ClickHouse."
-          },
-          "split_files": {
-            "type": "boolean",
-            "description": "Flag indicating whether to split the files for larger datasets."
-          }
-        }
-      },
-      "JobExecute": {
-        "type": "object",
-        "required": [
-          "query"
-        ],
-        "properties": {
-          "query": {
-            "type": "string",
-            "description": "Base64 encoded SQL query to execute on ClickHouse."
-          },
-          "page": {
-            "$ref": "#/components/schemas/Page"
-          }
-        }
-      },
-      "JobExecutionResult": {
-        "type": "object",
-        "properties": {
-          "rows": {
-            "type": "array",
-            "additionalProperties": true,
-            "items": {
-              "type": "object"
-            },
-            "description": "Array of rows resulting from the job execution."
-          },
-          "page": {
-            "$ref": "#/components/schemas/Page"
-          }
-        }
-      },
-      "JobStatus": {
-        "type": "object",
-        "properties": {
-          "start_date": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The start date and time of the job."
-          },
-          "end_date": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The end date and time of the job.",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "description": "The current status of the job."
-          },
-          "message": {
-            "type": "string",
-            "description": "Message providing additional details about the job status."
-          },
-          "file_metadata": {
-            "type": "array",
-            "items": {
-              "type": "object"
-            },
-            "nullable": true,
-            "description": "Metadata about files associated with the job, if any."
-          }
-        }
-      },
       "RequestBodyAuditLog": {
         "required": [
           "log_meta",
@@ -81953,6 +83557,166 @@
             "description": "The action performed on or by the entity."
           }
         }
+      },
+      "Page": {
+        "type": "object",
+        "description": "An object representing a page with pagination details.",
+        "properties": {
+          "item_total": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The total number of all items across all pages.",
+            "example": 10
+          },
+          "next_id": {
+            "type": "string",
+            "description": "The identifier for the next page.",
+            "example": "abc123"
+          },
+          "has_previous": {
+            "type": "boolean",
+            "description": "Indicates whether there is a previous page.",
+            "example": true
+          },
+          "has_next": {
+            "type": "boolean",
+            "description": "Indicates whether there is a next page.",
+            "example": false
+          },
+          "current": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The current page number.",
+            "example": 1
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of the page, can be 'cursor' or 'number'.",
+            "example": "cursor"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of items per page.",
+            "example": 20
+          },
+          "page_size": {
+            "type": "integer",
+            "format": "int32",
+            "description": "The number of items per page.",
+            "example": 20
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "StandardError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A brief description of the error."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ValidationErrors": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "description": "A list of validation errors in the request.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
+      "ApplicationStaff": {
+        "type": "object",
+        "description": "A staff member of a sales channel.",
+        "properties": {
+          "application": {
+            "type": "string",
+            "description": "Unique ID of the associated application."
+          },
+          "user": {
+            "type": "string",
+            "description": "Unique ID of the user."
+          },
+          "title": {
+            "type": "string",
+            "description": "Title of the staff member."
+          },
+          "order_incent": {
+            "type": "boolean",
+            "description": "Indicates whether the staff member is eligible for incentives on orders."
+          },
+          "stores": {
+            "type": "array",
+            "description": "List of ids of the ordering stores where the staff member works.",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "employee_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "Employee code of the staff member."
+          },
+          "first_name": {
+            "type": "string",
+            "description": "First name of the associated user."
+          },
+          "last_name": {
+            "type": "string",
+            "description": "Last name of the associated user."
+          },
+          "profile_pic_url": {
+            "type": "string",
+            "description": "Profile picture URL of the associated user."
+          }
+        }
+      },
+      "ApplicationStaffPage": {
+        "type": "object",
+        "description": "Paginated application staff members.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of application staff members.",
+            "items": {
+              "$ref": "#/components/schemas/ApplicationStaff"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        },
+        "required": []
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A brief description of the error encountered."
+          },
+          "field": {
+            "type": "string",
+            "description": "The field in the request that caused the error."
+          }
+        },
+        "required": [
+          "message",
+          "field"
+        ]
       },
       "SubscriptionChargeRes": {
         "type": "object",
@@ -83188,6 +84952,14 @@
               "format": "int32"
             }
           },
+          "exclude_user_groups": {
+            "type": "array",
+            "description": "List of user groups on which coupon is not allowed",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
           "coupon_allowed": {
             "type": "boolean",
             "description": "Allow applying normal coupon if bulk coupon is applied"
@@ -83542,6 +85314,14 @@
               "type": "string"
             }
           },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
+          },
           "_schedule": {
             "$ref": "#/components/schemas/CouponSchedule"
           },
@@ -83651,6 +85431,14 @@
           "tags": {
             "type": "array",
             "description": "List of tags specify to platform",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
+          },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
             "default": [],
             "items": {
               "type": "string"
@@ -84613,6 +86401,14 @@
               "format": "int32"
             }
           },
+          "exclude_user_groups": {
+            "type": "array",
+            "description": "List of user groups on which promotion is not applicable",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
           "order_quantity": {
             "type": "integer",
             "format": "int32",
@@ -84941,6 +86737,14 @@
               "type": "string"
             }
           },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
+          },
           "auto_apply": {
             "type": "boolean",
             "description": "Boolean value to determine if the promotion should be applied automatically or not"
@@ -85106,6 +86910,14 @@
               "type": "string"
             }
           },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
+          },
           "auto_apply": {
             "type": "boolean",
             "description": "Boolean value to determine if the promotion should be applied automatically or not"
@@ -85250,6 +87062,14 @@
           "tags": {
             "type": "array",
             "description": "List of tags applicable for promotion",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
+          },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
             "default": [],
             "items": {
               "type": "string"
@@ -85401,6 +87221,14 @@
             "type": "array",
             "default": [],
             "description": "List of tags applicable for promotion",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
             "items": {
               "type": "string"
             }
@@ -85559,6 +87387,14 @@
               "type": "string"
             }
           },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
+          },
           "auto_apply": {
             "type": "boolean",
             "description": "Boolean value to determine if the promotion should be applied automatically or not"
@@ -85630,6 +87466,22 @@
           "description": {
             "type": "string",
             "description": "The description of the offer in the form of an HTML"
+          },
+          "discount_type": {
+            "type": "string",
+            "description": "Determines the type of discount offered i.e percentage, amount, free item, etc.",
+            "enum": [
+              "absolute",
+              "amount",
+              "bogo",
+              "fixed_price",
+              "flat_price",
+              "free_gift_items",
+              "item_based_discount",
+              "percentage",
+              "quantity",
+              "shipping_price"
+            ]
           }
         }
       },
@@ -85934,7 +87786,8 @@
               "discount",
               "mop",
               "selling_price",
-              "delivery_charge"
+              "delivery_charge",
+              "price_override"
             ],
             "description": "Type of price adjusment like charge, mop, discount etc."
           },
@@ -86040,7 +87893,8 @@
               "discount",
               "mop",
               "selling_price",
-              "delivery_charge"
+              "delivery_charge",
+              "price_override"
             ],
             "description": "Type of price adjusment like charge, discount, mop etc."
           },
@@ -86166,7 +88020,8 @@
               "discount",
               "mop",
               "selling_price",
-              "delivery_charge"
+              "delivery_charge",
+              "price_override"
             ],
             "description": "type of price adjusment"
           },
@@ -86796,6 +88651,16 @@
             "type": "number",
             "format": "float",
             "description": "Original price of product"
+          },
+          "pre_override_effective": {
+            "type": "number",
+            "format": "float",
+            "description": "Per unit selling price before any price_override price adjustment. Equals effective when the line was never overridden."
+          },
+          "pre_override_marked": {
+            "type": "number",
+            "format": "float",
+            "description": "Per unit MRP before any price_override price adjustment. Equals marked when the line was never overridden."
           }
         }
       },
@@ -87605,6 +89470,16 @@
               "$ref": "#/components/schemas/ArticleCharges"
             },
             "description": "Charges information which denotes types of charges and amount of charge applied to that product in cart."
+          },
+          "added_on": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Date and time when the item was added to the cart."
+          },
+          "returnable": {
+            "type": "boolean",
+            "description": "Whether this cart item can be returned after delivery. Resolved from the product/category return configuration combined with the post-order restrictions of any applied coupon, promotion or price adjustment. Same value the order is created with, so it is safe to render a \"non-returnable\" label from it."
           }
         },
         "required": [
@@ -87786,6 +89661,57 @@
           },
           "breakup_values": {
             "$ref": "#/components/schemas/CartBreakup"
+          }
+        }
+      },
+      "PlatformCartCODServiceabilityCreation": {
+        "type": "object",
+        "description": "Shipping detail from API request schema which includes list of items and shipping address",
+        "properties": {
+          "cart_items": {
+            "type": "array",
+            "description": "List of items in the cart",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          },
+          "shipping_address": {
+            "$ref": "#/components/schemas/ShippingAddress"
+          }
+        },
+        "required": [
+          "cart_items",
+          "shipping_address"
+        ]
+      },
+      "PlatformCartCODServiceabilityResult": {
+        "type": "object",
+        "description": "Cart COD serviceability API response schema which includes applied promo details, breakup values, buy_now, cart id, checkout mode, comment common config, coupon, coupon text, gstin etc along with COD availability and charges.",
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "description": "Cart validity flag determines the if the response is valid or not"
+          },
+          "items": {
+            "type": "array",
+            "description": "Items data list in user cart that includes item id, item size, store id, available sizes and rest of the item related data",
+            "items": {
+              "$ref": "#/components/schemas/CartProductInfo"
+            }
+          },
+          "delivery_promise": {
+            "$ref": "#/components/schemas/ShipmentPromise"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message of the cart detail API response"
+          },
+          "breakup_values": {
+            "$ref": "#/components/schemas/CartBreakup"
+          },
+          "is_cod_available": {
+            "type": "boolean",
+            "description": "Indicates whether Cash on Delivery is available for the given cart items at the requested pincode, based on logistics serviceability and payment configuration"
           }
         }
       },
@@ -88625,6 +90551,9 @@
             "type": "string",
             "description": "GSTIN added in user cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "applied_promo_details": {
             "type": "array",
             "description": "List of applied promotions data to cart which includes promotion id, promotion name, offer text, description, buy rules, discount rules and promotion type",
@@ -89397,6 +91326,9 @@
             "type": "string",
             "description": "GSTIN added in user cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "custom_cart_meta": {
             "type": "object",
             "description": "Custom cart meta of user cart added via update cart meta API",
@@ -89604,6 +91536,9 @@
             "type": "string",
             "description": "GSTIN added in user cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "custom_cart_meta": {
             "type": "object",
             "additionalProperties": true,
@@ -89789,6 +91724,12 @@
           "expires_on": {
             "type": "string",
             "description": "Message to display to user for expiry of the coupon"
+          },
+          "expires_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Represents the last valid timeslot date on which the coupon can be applied in ISO 8601 (UTC Z) format,based on its configured schedule. If the coupon is restricted to specific days (e.g., Mondays and Thursdays), the expiry date will be the last eligible day within the overall end date range, not necessarily the end date itself."
           },
           "coupon_value": {
             "type": "number",
@@ -90344,6 +92285,9 @@
             "type": "string",
             "description": "GSTIN number added in cart"
           },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
+          },
           "applied_promo_details": {
             "type": "array",
             "description": "List of applied promotions data to cart which includes promotion id, promotion name, offer text, description, buy rules, discount rules and promotion type",
@@ -90415,6 +92359,23 @@
           "shipments"
         ]
       },
+      "ShipToGstDetails": {
+        "type": "object",
+        "nullable": true,
+        "description": "Ship-to GST and trade name details used for bill-to ship-to e-way bill generation.",
+        "properties": {
+          "gstin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ship-to GSTIN for bill-to ship-to e-way bill generation."
+          },
+          "trade_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Ship-to trade name for bill-to ship-to e-way bill generation."
+          }
+        }
+      },
       "PlatformCartMetaCreation": {
         "type": "object",
         "description": "Cart meta request schema to update the cart meta detail like delivery slots, comment message, GSTIN and custom cart meta",
@@ -90422,6 +92383,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN number to be added in user cart"
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "pick_up_customer_details": {
             "type": "object",
@@ -90863,6 +92827,9 @@
           "gstin": {
             "type": "string",
             "description": "GSTIN number added in cart"
+          },
+          "ship_to_gst_details": {
+            "$ref": "#/components/schemas/ShipToGstDetails"
           },
           "cod_available": {
             "type": "boolean",
@@ -91759,23 +93726,6 @@
           }
         }
       },
-      "ValidationError": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "A brief description of the error encountered."
-          },
-          "field": {
-            "type": "string",
-            "description": "The field in the request that caused the error."
-          }
-        },
-        "required": [
-          "message",
-          "field"
-        ]
-      },
       "OfferUser": {
         "type": "object",
         "description": "Filter offer user criteria",
@@ -91783,6 +93733,14 @@
           "groups": {
             "type": "array",
             "description": "List of user group on which offer is allowed",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "exclude_groups": {
+            "type": "array",
+            "description": "List of user groups on which offer is not allowed",
             "items": {
               "type": "integer",
               "format": "int32"
@@ -92441,24 +94399,20 @@
             "type": "string",
             "description": "Different types of offers available in the system. This is used to determine the type of offer and the calculation of the offer. Some types are mode specific, few examples are :> - free_item_discount_absolute is only applicable for coupon mode - contract_price, shipping_price, free_gift_items, cashback, free_items, free_non_sellable_items, external_price_adjustment_discount, custom is only applicable for promotion mode",
             "enum": [
+              "percentage",
               "amount",
-              "bogo",
-              "bundle_amount_percentage",
-              "bundle_price_amount",
               "bundle_price_percentage",
-              "contract_price",
+              "bundle_price_amount",
+              "bundle_amount_percentage",
+              "bogo",
               "fixed_price",
+              "shipping_price",
               "free_gift_items",
               "free_item_discount_absolute",
+              "bundle_discount_quantity_percentage",
               "item_based_discount",
               "ladder_price",
-              "percentage",
-              "shipping_price",
-              "fixed_unit_price",
-              "cashback",
-              "free_items",
-              "free_non_sellable_items",
-              "external_price_adjustment_discount",
+              "contract_price",
               "custom"
             ]
           },
@@ -92523,6 +94477,14 @@
             "type": "boolean",
             "default": false,
             "description": "Flag to determine if any bank offer is applicable"
+          },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -92599,22 +94561,6 @@
           }
         }
       },
-      "NextScheduleItems": {
-        "type": "object",
-        "description": "Next schedule items, contains list of all possible schedule dates based on start, end, cron and duration data.",
-        "properties": {
-          "start": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Start date of schedule"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time",
-            "description": "End date of schedule"
-          }
-        }
-      },
       "OfferSchedule": {
         "description": "Defines the time range and scheduling details for when the offer remains active.",
         "type": "object",
@@ -92632,13 +94578,6 @@
             "type": "string",
             "format": "date-time",
             "description": "The start date and time from which the offer becomes valid."
-          },
-          "next_schedule": {
-            "type": "array",
-            "description": "A auto generated list of date-time entries based on start, end,\n  cron and duration data on which the offer is scheduled to activate in the future.\n",
-            "items": {
-              "$ref": "#/components/schemas/NextScheduleItems"
-            }
           },
           "cron": {
             "type": "string",
@@ -92669,26 +94608,27 @@
             "type": "string",
             "description": "Type of the offer",
             "enum": [
+              "percentage",
               "amount",
-              "bogo",
-              "bundle_amount_percentage",
-              "bundle_price_amount",
               "bundle_price_percentage",
-              "contract_price",
+              "bundle_price_amount",
+              "bundle_amount_percentage",
+              "bogo",
               "fixed_price",
+              "shipping_price",
               "free_gift_items",
               "free_item_discount_absolute",
+              "bundle_discount_quantity_percentage",
               "item_based_discount",
               "ladder_price",
-              "percentage",
-              "shipping_price",
-              "fixed_unit_price",
-              "cashback",
-              "free_items",
-              "free_non_sellable_items",
-              "external_price_adjustment_discount",
+              "contract_price",
               "custom"
             ]
+          },
+          "code": {
+            "type": "string",
+            "description": "Unique identifier code for the offer. For coupons (mode = \"coupon\"), this is the coupon code users enter to apply the offer. For promotions (mode = \"promotion\"), this field may be null or empty as promotions are auto-applied.",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -92715,6 +94655,14 @@
           },
           "schedule": {
             "$ref": "#/components/schemas/OfferSchedule"
+          },
+          "filter_tags": {
+            "type": "array",
+            "description": "Tags used to filter coupons, promotions, or offers in list APIs. When multiple values are provided in a list request, entities matching any tag are returned (OR).",
+            "default": [],
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -92734,6 +94682,61 @@
           }
         }
       },
+      "InventoryTransaction": {
+        "description": "Optional audit transaction context for an inventory change. All fields are optional with no hard validation; the whole object is recorded in the audit-trail event.",
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "type": {
+            "description": "Reason category for the inventory change.",
+            "type": "string",
+            "example": "stock_transfer_in",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "reference_id": {
+            "description": "External transaction reference id (e.g. inbound / PO / transfer id).",
+            "type": "string",
+            "example": "INBO0001",
+            "x-not-enum": true
+          },
+          "reason": {
+            "description": "Free-text reason for the inventory change.",
+            "type": "string",
+            "example": "adding P0 for location xyz",
+            "x-not-enum": true
+          },
+          "source": {
+            "description": "Origin system of the change.",
+            "type": "string",
+            "example": "api",
+            "x-not-enum": true
+          },
+          "user_ref": {
+            "description": "Reference to the user who initiated the change.",
+            "type": "string",
+            "example": "user@example.com",
+            "x-not-enum": true
+          }
+        }
+      },
       "Action": {
         "type": "object",
         "description": "Schema to define the Action Object",
@@ -92750,33 +94753,6 @@
             "$ref": "#/components/schemas/ActionPage"
           }
         }
-      },
-      "ValidationErrors": {
-        "type": "object",
-        "properties": {
-          "errors": {
-            "description": "A list of validation errors in the request.",
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            }
-          }
-        },
-        "required": [
-          "errors"
-        ]
-      },
-      "StandardError": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "A brief description of the error."
-          }
-        },
-        "required": [
-          "message"
-        ]
       },
       "AllSizes": {
         "description": "Represents the details of all available sizes for a given product, including the physical dimensions, weight, and identifiers associated with each size.\n",
@@ -97764,6 +99740,22 @@
           "longitude"
         ]
       },
+      "RegionDetailsSchema": {
+        "type": "object",
+        "description": "Deployment region metadata for the company profile.",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Base region slug.",
+            "example": "asia-south1"
+          },
+          "zone": {
+            "type": "string",
+            "description": "Zone or cluster slug.",
+            "example": "default"
+          }
+        }
+      },
       "GetAllSizes": {
         "properties": {
           "all_sizes": {
@@ -99865,6 +101857,40 @@
           "user": {
             "type": "object",
             "additionalProperties": true
+          },
+          "transaction_type": {
+            "description": "Reason for the bulk inventory update. Recorded in the audit-trail event; per-row values on `sizes[].transaction_type` override this top-level value. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_bulk_update",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100414,6 +102440,40 @@
             "example": "TRACE123",
             "nullable": true,
             "type": "string"
+          },
+          "transaction_type": {
+            "description": "Reason for this row's inventory update. Recorded in the audit-trail event. Overrides the request-level `transaction_type` when both are present. Optional.",
+            "example": "manual_adjustment_bulk_update",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100486,6 +102546,11 @@
             "example": 10.99,
             "type": "number"
           },
+          "price_cost": {
+            "description": "The cost price of the article.",
+            "example": 7.99,
+            "type": "number"
+          },
           "seller_identifier": {
             "description": "The identifier of the seller.",
             "example": "SELLER123",
@@ -100544,6 +102609,40 @@
           "meta": {
             "type": "object",
             "additionalProperties": true
+          },
+          "transaction_type": {
+            "description": "Reason for this row's inventory update. Recorded in the audit-trail event. Overrides the request-level `transaction_type` when both are present. Optional.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100565,6 +102664,40 @@
               "$ref": "#/components/schemas/InvSize"
             },
             "type": "array"
+          },
+          "transaction_type": {
+            "description": "Reason for the inventory update. Recorded in the audit-trail event for the resulting article mutation. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -100598,6 +102731,7 @@
                 "expiration_date": "2023-12-31T15:43:59.410Z",
                 "price_effective": 79.99,
                 "price_marked": 99.99,
+                "price_cost": 7.99,
                 "seller_identifier": "SELLER123",
                 "store_id": 456,
                 "tags": [
@@ -100613,6 +102747,40 @@
             },
             "maxItems": 50,
             "type": "array"
+          },
+          "transaction_type": {
+            "description": "Reason for the inventory update. Recorded in the audit-trail event for the resulting article mutation; per-row values on `payload[].transaction_type` override this top-level value. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -101682,7 +103850,8 @@
           "page": {
             "$ref": "#/components/schemas/Page"
           }
-        }
+        },
+        "required": []
       },
       "LocationManagerSchema": {
         "type": "object",
@@ -102127,12 +104296,51 @@
             "example": 10.99,
             "type": "number"
           },
+          "price_cost": {
+            "description": "The cost price of the article.",
+            "example": 7.99,
+            "type": "number"
+          },
           "tags": {
             "description": "Tags associated with inventory item.",
             "items": {
               "type": "string"
             },
             "type": "array"
+          },
+          "transaction_type": {
+            "description": "Reason for the price update. Recorded in the audit-trail event for the resulting article mutation. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
+            ]
           }
         },
         "required": [
@@ -102171,6 +104379,40 @@
             "enum": [
               "delta",
               "replace"
+            ]
+          },
+          "transaction_type": {
+            "description": "Reason for the quantity update. Recorded in the audit-trail event for the resulting article mutation. Optional; defaults to \"other\" when omitted.",
+            "example": "manual_adjustment_single_product",
+            "nullable": true,
+            "type": "string",
+            "enum": [
+              "stock_transfer_in",
+              "stock_transfer_out",
+              "grn_direct_inbound",
+              "grn_po",
+              "grn_asn",
+              "stock_audit_adjustment",
+              "bucket_movement_sellable_to_committed",
+              "bucket_movement_committed_to_sellable",
+              "bucket_movement_sellable_to_damaged",
+              "bucket_movement_damaged_to_saleable",
+              "customer_sale",
+              "return",
+              "cancellation",
+              "vendor_return",
+              "manual_adjustment_bulk_update",
+              "manual_adjustment_single_product",
+              "other"
+            ]
+          },
+          "transaction": {
+            "description": "Audit transaction context; supersedes the flat `transaction_type` (its `type` carries the same value). All fields optional; recorded in the audit-trail event.",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/InventoryTransaction"
+              }
             ]
           }
         },
@@ -108924,7 +111166,7 @@
       },
       "PageType": {
         "type": "string",
-        "description": "The type of action such as product, products, category, brand.",
+        "description": "The type of action such as product, products, category, brand",
         "enum": [
           "about-us",
           "addresses",
@@ -108956,6 +111198,7 @@
           "profile-company",
           "profile-email",
           "profile-phone",
+          "profile-loyalty-rewards",
           "rate-us",
           "refer-earn",
           "settings",
@@ -117151,6 +119394,125 @@
               "$ref": "#/components/schemas/OrderingStore"
             }
           }
+        },
+        "required": []
+      },
+      "AppAssociationDeleted": {
+        "type": "object",
+        "description": "Confirmation payload returned on successful DELETE.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Operation status string (e.g. \"deleted\").",
+            "example": "deleted"
+          },
+          "application_id": {
+            "type": "string",
+            "description": "The application_id whose record was deleted.",
+            "example": "000000000000000000000001"
+          }
+        }
+      },
+      "AppAssociationIosPayload": {
+        "type": "object",
+        "description": "Apple App Site Association JSON. Documented sections match Apple's published spec; stored via Schema.Types.Mixed so any additional fields the merchant configures are returned verbatim.",
+        "properties": {
+          "applinks": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Universal Links configuration."
+          },
+          "appclips": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "App Clips configuration."
+          },
+          "webcredentials": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Shared Web Credentials."
+          },
+          "activitycontinuation": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Handoff. Deprecated in iOS 14+."
+          }
+        }
+      },
+      "AppAssociationAndroidStatement": {
+        "type": "object",
+        "description": "A single Digital Asset Links statement object.",
+        "properties": {
+          "relation": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Permission relations granted by this statement."
+          },
+          "target": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Subject of the statement (android_app or web)."
+          }
+        }
+      },
+      "AppAssociationWriteBody": {
+        "type": "object",
+        "description": "Request body for create (POST) and update (PUT). Either field may be omitted, included as a JSON value, or set to explicit null to clear the stored value. Server enforces structural validation only — iOS must be a JSON object (or null), Android a JSON array (or null). Apple/Google spec conformance is the merchant's responsibility.",
+        "properties": {
+          "ios_payload": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppAssociationIosPayload"
+              }
+            ],
+            "nullable": true,
+            "description": "Apple App Site Association JSON. Null to clear."
+          },
+          "android_payload": {
+            "type": "array",
+            "nullable": true,
+            "description": "Digital Asset Links JSON (array of statements). Null to clear.",
+            "items": {
+              "$ref": "#/components/schemas/AppAssociationAndroidStatement"
+            }
+          }
+        }
+      },
+      "AppAssociationRecord": {
+        "type": "object",
+        "description": "Stored app-association record returned on GET / POST 201 / PUT 200.",
+        "properties": {
+          "ios_payload": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppAssociationIosPayload"
+              }
+            ],
+            "nullable": true
+          },
+          "android_payload": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/AppAssociationAndroidStatement"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string"
+          },
+          "modified_by": {
+            "type": "string"
+          }
         }
       },
       "GenerationEntityType": {
@@ -123947,6 +126309,25 @@
           }
         }
       },
+      "AdditionalInfo": {
+        "type": "object",
+        "description": "Additional information related to the ticket",
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "description": "Human readable name for this info"
+          },
+          "display_value": {
+            "type": "string",
+            "description": "Human readable value for the info"
+          },
+          "priority": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Priority of this additional info"
+          }
+        }
+      },
       "AddTicketPayload": {
         "required": [
           "category",
@@ -123976,6 +126357,13 @@
             "type": "object",
             "additionalProperties": true,
             "description": "optional custom data that needs to be sent"
+          },
+          "additional_info": {
+            "type": "array",
+            "description": "Additional information related to the ticket",
+            "items": {
+              "$ref": "#/components/schemas/AdditionalInfo"
+            }
           }
         }
       },
@@ -124969,6 +127357,9 @@
           },
           "page": {
             "$ref": "#/components/schemas/Page"
+          },
+          "fo_details": {
+            "$ref": "#/components/schemas/FoDetails"
           }
         },
         "required": [
@@ -127437,7 +129828,7 @@
           },
           "channel_type": {
             "type": "string",
-            "description": "Specifies the type of sales channel (extension, marketplace, or other).",
+            "description": "Specifies the type of sales channel.",
             "enum": [
               "extension",
               "marketplace",
@@ -128714,6 +131105,146 @@
           "stage"
         ]
       },
+      "ZoneProductsAtomicPatchItem": {
+        "type": "object",
+        "description": "A single concurrency-safe add/remove operation applied to one zone's product list.",
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "description": "The unique identifier of the zone to patch."
+          },
+          "product_type": {
+            "type": "string",
+            "description": "The type the zone's product list is made of. Must match the existing zone product type. Product ids are not validated against the catalog for any type.",
+            "enum": [
+              "all",
+              "item_id",
+              "product",
+              "department",
+              "category",
+              "tag"
+            ]
+          },
+          "values": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Product identifiers to add or remove - uids for item_id/product/department/category (integers) or tag strings.",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "action": {
+            "type": "string",
+            "description": "Whether to add the values to, or remove them from, the zone product list.",
+            "enum": [
+              "add",
+              "remove"
+            ]
+          }
+        },
+        "required": [
+          "zone_id",
+          "product_type",
+          "values",
+          "action"
+        ]
+      },
+      "ZoneProductsAtomicPatchDetails": {
+        "type": "object",
+        "description": "Request body for the synchronous, concurrency-safe bulk add/remove of products on one or more zones. Each item is applied with an atomic MongoDB array operator (`$addToSet` for add, `$pull` for remove), so concurrent writes to the same zone never lose each other's changes (no read-modify-write lost-update race).",
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "description": "List of per-zone product patch operations.",
+            "items": {
+              "$ref": "#/components/schemas/ZoneProductsAtomicPatchItem"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ZoneProductsAtomicPatchResultItem": {
+        "type": "object",
+        "description": "Result of applying one item from the atomic zone products patch request.",
+        "properties": {
+          "zone_id": {
+            "type": "string"
+          },
+          "product_type": {
+            "type": "string",
+            "description": "The type the zone's product list is made of. Mirrors the product_type sent in the patch request.",
+            "enum": [
+              "all",
+              "item_id",
+              "product",
+              "department",
+              "category",
+              "tag"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "add",
+              "remove"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "success",
+              "failed"
+            ]
+          },
+          "values_count": {
+            "type": "integer",
+            "description": "Number of products in the zone's product list after a successful patch."
+          },
+          "error": {
+            "type": "array",
+            "nullable": true,
+            "description": "Present when status is `failed`.",
+            "items": {
+              "$ref": "#/components/schemas/ZoneProductsAtomicPatchItemError"
+            }
+          }
+        },
+        "required": [
+          "zone_id",
+          "product_type",
+          "action",
+          "status"
+        ]
+      },
+      "ZoneProductsAtomicPatchResult": {
+        "type": "object",
+        "description": "Per-item results and roll-up summary of an atomic zone products patch.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ZoneProductsAtomicPatchResultItem"
+            }
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ZoneProductsAtomicPatchSummary"
+          }
+        },
+        "required": [
+          "items",
+          "summary"
+        ]
+      },
       "CourierPartnerToServiceability": {
         "type": "object",
         "description": "Represents the serviceability details for a courier partner, including location and related address information for serviceability.",
@@ -128828,6 +131359,14 @@
           "is_mto": {
             "type": "boolean",
             "description": "A boolean indicating if the courier partner supports Made to Order service."
+          },
+          "is_mps": {
+            "type": "boolean",
+            "description": "Indicates if shipment configuration is multi-part shipment or single shipment."
+          },
+          "is_b2b": {
+            "type": "boolean",
+            "description": "Indicates if the shipment is business-to-business."
           },
           "ignore_scheme_ids": {
             "type": "array",
@@ -129086,32 +131625,31 @@
       },
       "LocationDetailsServiceability": {
         "type": "object",
-        "description": "Represents the serviceability details of a location, including geographic and administrative information.",
+        "description": "Customer's delivery destination used for serviceability checks and store routing when resolving optimal fulfillment location, includes geographic and administrative locality fields.",
         "properties": {
           "pincode": {
             "type": "string",
-            "description": "The pincode of the serviceability location."
+            "description": "The pincode of the customer's delivery destination."
           },
           "sector": {
             "type": "string",
-            "description": "The sector of the serviceability location."
+            "description": "The sector of the customer's delivery destination."
           },
           "state": {
             "type": "string",
-            "description": "The state of the serviceability location."
+            "description": "The state of the customer's delivery destination."
           },
           "country": {
             "type": "string",
-            "description": "The country of the serviceability location."
+            "description": "The country of the customer's delivery destination."
           },
           "city": {
             "type": "string",
-            "description": "The city of the serviceability location."
+            "description": "The city of the customer's delivery destination."
           },
           "country_iso_code": {
             "type": "string",
-            "x-not-enum": true,
-            "description": "The ISO code of the country."
+            "description": "The ISO code of the country for the delivery destination."
           },
           "location": {
             "$ref": "#/components/schemas/ServiceabilityLocation"
@@ -129670,6 +132208,54 @@
         "type": "object",
         "description": "Delivery service option with ID, type, name, and default status.",
         "properties": {
+          "application_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The unique identifier of the application."
+          },
+          "business_unit": {
+            "type": "array",
+            "nullable": true,
+            "description": "Business units (e.g. Store OS, Storefront) this fulfillment option applies to; mirrors the platform fulfillment option payload.",
+            "items": {
+              "$ref": "#/components/schemas/BusinessUnit"
+            }
+          },
+          "company_id": {
+            "type": "integer",
+            "nullable": true,
+            "description": "The unique identifier of the company."
+          },
+          "default_for": {
+            "$ref": "#/components/schemas/FulfillmentOptionDefaultFor"
+          },
+          "modified_by": {
+            "$ref": "#/components/schemas/ModifiedBy"
+          },
+          "modified_on": {
+            "type": "string",
+            "nullable": true,
+            "description": "Timestamp when the object was last modified."
+          },
+          "serviceability_type": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "zone_based",
+              "all"
+            ],
+            "description": "Type of serviceability for the fulfillment option."
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "active",
+              "inactive",
+              "draft"
+            ],
+            "description": "Status of the fulfillment option."
+          },
           "slug": {
             "type": "string",
             "description": "Unique identifier for the delivery type."
@@ -129697,6 +132283,66 @@
           "name": {
             "type": "string",
             "description": "Name of the delivery service."
+          },
+          "max_promise_allowed": {
+            "$ref": "#/components/schemas/MaxPromiseAllowed"
+          }
+        }
+      },
+      "BusinessUnit": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "STORE_OS",
+              "STORE_FRONT"
+            ],
+            "description": "Name of the business unit."
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether the business unit is active."
+          }
+        }
+      },
+      "FulfillmentOptionDefaultFor": {
+        "type": "object",
+        "description": "When enabled for a specific business unit, the fulfillment option associated with this flag is treated as the default and is automatically applied whenever a fulfillment option is not supplied.",
+        "properties": {
+          "storefront": {
+            "type": "boolean",
+            "description": "If set to true, this fulfillment option will be default for storefront.",
+            "example": true
+          },
+          "storeos": {
+            "type": "boolean",
+            "description": "If set to true, this fulfillment option will be default for storeos.",
+            "example": true
+          }
+        }
+      },
+      "MaxPromiseAllowed": {
+        "type": "object",
+        "description": "Maximum promise allowed for a delivery service (e.g. delivery SLA in seconds).",
+        "properties": {
+          "value": {
+            "type": "number",
+            "description": "Promise value (in seconds).",
+            "example": 259200
+          },
+          "is_active": {
+            "type": "boolean",
+            "description": "Whether this promise limit is active."
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of promise configuration. For same_day, value is 0 seconds.",
+            "enum": [
+              "same_day",
+              "next_day",
+              "custom"
+            ]
           }
         }
       },
@@ -130066,39 +132712,6 @@
             "type": "integer",
             "description": "Quantity of items not under quality control (nullable).",
             "nullable": true
-          }
-        }
-      },
-      "FulfillmentOptionDefaultFor": {
-        "type": "object",
-        "description": "When enabled for a specific business unit, the fulfillment option associated with this flag is treated as the default and is automatically applied whenever a fulfillment option is not supplied.",
-        "properties": {
-          "storefront": {
-            "type": "boolean",
-            "description": "If set to true, this fulfillment option will be default for storefront.",
-            "example": true
-          },
-          "storeos": {
-            "type": "boolean",
-            "description": "If set to true, this fulfillment option will be default for storeos.",
-            "example": true
-          }
-        }
-      },
-      "BusinessUnit": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "enum": [
-              "STORE_OS",
-              "STORE_FRONT"
-            ],
-            "description": "Name of the business unit."
-          },
-          "is_active": {
-            "type": "boolean",
-            "description": "Whether the business unit is active."
           }
         }
       },
@@ -131051,6 +133664,28 @@
             "type": "integer"
           }
         }
+      },
+      "FoDetails": {
+        "type": "object",
+        "description": "Serviceability summary for the fulfillment option, returned only when the list is filtered by `fulfillment_option_slug`. Used by the UI to decide whether the last active zone of a \"Restrict to Zones\" fulfillment option can be deactivated or deleted.",
+        "properties": {
+          "serviceability_type": {
+            "type": "string",
+            "description": "Serviceability strategy configured for the fulfillment option. `zone_based` corresponds to the \"Restrict to Zones\" strategy and `all` to \"Ship to All\".",
+            "enum": [
+              "zone_based",
+              "all"
+            ]
+          },
+          "active_non_default_zone_count": {
+            "type": "integer",
+            "description": "Number of active, non-default zones (excluding zones still in progress) mapped to this fulfillment option."
+          }
+        },
+        "required": [
+          "serviceability_type",
+          "active_non_default_zone_count"
+        ]
       },
       "ZoneStores": {
         "description": "Represents store data within a zone.",
@@ -132696,11 +135331,11 @@
       },
       "ArticleAssignment": {
         "type": "object",
-        "description": "Defines how articles are assigned to locations based on specified strategies.",
+        "description": "Defines how articles are assigned to fulfillment locations. `level` controls the assignment scope (seller or store constraints), and `strategy` controls how the best store is selected within that scope.",
         "properties": {
           "level": {
             "type": "string",
-            "description": "Defines the assignment level (multi-companies, single-company, or single-store).",
+            "description": "Defines the assignment scope for locating inventory during fulfillment.  When set to `single-company`, inventory assignment is restricted to a specific seller, (mandatory when `channel_type` is `extension`.  The `single-store` level confines fulfillment strictly to a designated store. Choosing `multi-companies` enables the system to flexibly identify the optimal store across all configured sellers and locations.",
             "enum": [
               "multi-companies",
               "single-company",
@@ -132709,19 +135344,22 @@
           },
           "strategy": {
             "type": "string",
-            "description": "The strategy parameter allows users to specify the desired approach or criteria for selecting optimal locations.",
+            "description": "Criteria used to select the best fulfillment location within the chosen `level`.  Optimal uses the order routing rule engine to pick the best store based on configured routing rules.  Fast-delivery picks the store that can deliver fastest (lowest TAT/delivery promise).  Low-price picks the store offering the lowest price for the article.",
             "enum": [
               "optimal",
               "fast-delivery",
-              "low-price",
-              "manual"
+              "low-price"
             ]
           }
-        }
+        },
+        "required": [
+          "level",
+          "strategy"
+        ]
       },
       "OptimalLocationsArticles": {
         "type": "object",
-        "description": "Defines item details for optimizing warehouse or fulfillment locations.",
+        "description": "Article details used to determine the optimal fulfillment locations. Assignment behavior is driven by level and strategy. For `single-company`, provide `seller_id`.",
         "properties": {
           "item_id": {
             "type": "integer",
@@ -132737,11 +135375,11 @@
           },
           "group_id": {
             "type": "string",
-            "description": "Identifier for grouping related items."
+            "description": "Identifier that links related articles into one group (for example parent and child lines such as a bundle or free gift). Articles with the same `group_id` are expected to be fulfilled together."
           },
           "is_primary_item": {
             "type": "boolean",
-            "description": "Indicates if the item is the primary one in a group."
+            "description": "When `group_id` is set, indicates whether this article is the primary (parent) item in the group. Mandatory for grouped items."
           },
           "meta": {
             "type": "object",
@@ -132756,14 +135394,14 @@
             "items": {
               "type": "integer"
             },
-            "description": "List of location Ids to exclude."
+            "description": "Location Ids to exclude from assignment."
           },
           "assign_locations": {
             "type": "array",
             "items": {
               "type": "integer"
             },
-            "description": "List of preferred location Ids."
+            "description": "Preferred locations for assignment. For other levels, used as preferred locations when provided."
           },
           "seller_id": {
             "type": "integer",
@@ -133885,6 +136523,41 @@
           "page_number",
           "has_next",
           "total_records"
+        ]
+      },
+      "ZoneProductsAtomicPatchItemError": {
+        "type": "object",
+        "description": "A single error encountered while applying a patch item.",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ZoneProductsAtomicPatchSummary": {
+        "type": "object",
+        "description": "Roll-up counts for an atomic zone products patch.",
+        "properties": {
+          "total": {
+            "type": "integer"
+          },
+          "success": {
+            "type": "integer"
+          },
+          "failed": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "success",
+          "failed"
         ]
       },
       "PackageSchema": {
@@ -140681,7 +143354,7 @@
           },
           "amount_paid": {
             "type": "integer",
-            "description": "Total amount paid by this payment method"
+            "description": "Total amount paid by this payment method, for one unit of the line item, in the ordering currency."
           },
           "payment_identifier": {
             "type": "string",
@@ -140691,7 +143364,7 @@
             "$ref": "#/components/schemas/PaymentMethodTransactionPartySchema"
           }
         },
-        "description": "Payment methods used to fulfill this order."
+        "description": "Payment methods used to fulfill this order.\nEvery amount in this block is PER UNIT and in the ORDERING currency, the same currency as the line item's monetary_values, so do not multiply by quantity and do not convert to the seller's currency yourself. On a cross-currency order the platform restates the amount into the seller's currency for the order-level payment methods, and keeps the ordering-currency amount on the shipment and the bag."
       },
       "PackagesSchema": {
         "type": "object",
@@ -140830,14 +143503,25 @@
             "type": "string",
             "description": "Size associated with the bundle item."
           }
-        }
+        },
+        "required": [
+          "is_base",
+          "images",
+          "group_id",
+          "name",
+          "item_type",
+          "item_id",
+          "item_code",
+          "item_name",
+          "seller_identifier"
+        ]
       },
       "LineItemMonetaryValuesSchema": {
         "type": "object",
         "properties": {
           "amount_paid": {
             "type": "number",
-            "description": "Amount paid by the customer"
+            "description": "Amount paid by the customer, for one unit of the line item."
           },
           "price_effective": {
             "type": "number",
@@ -140872,7 +143556,7 @@
             "description": "Delivery Charges Applied for this Article."
           }
         },
-        "description": "Financial details associated with the line item (note all the values will be in ordering currency i.e customer paid currency). \nPrice Calculation Rules: The updated price values must comply with the following rules:\nBrand Calculated Price:\nbrand_calculated_price = price_effective - Seller Coupon Discount - Seller Promotion Discount\nValue of Goods:\nvalue_of_goods = brand_calculated_price - gst_amount\nAmount Paid:\namount_paid = price_effective + cod_charges + delivery_charges + article_charge - coupon_effective_discount - promotion_effective_discount",
+        "description": "Financial details associated with the line item (note all the values will be in ordering currency i.e customer paid currency).\nEvery value in this block is PER UNIT and in the ORDERING currency, so do not multiply by quantity and do not convert to the seller's currency yourself. The platform derives the seller-currency figures from currency_details.conversion_rate.rate and stores both, and applies quantity above the bag.\nPrice Calculation Rules: The updated price values must comply with the following rules:\nBrand Calculated Price:\nbrand_calculated_price = price_effective - Seller Coupon Discount - Seller Promotion Discount\nValue of Goods:\nvalue_of_goods = brand_calculated_price - gst_amount\nAmount Paid:\namount_paid = price_effective + cod_charges + delivery_charges + article_charge - coupon_effective_discount - promotion_effective_discount",
         "required": [
           "amount_paid",
           "price_effective",
@@ -141209,6 +143893,13 @@
           "bundle_details": {
             "$ref": "#/components/schemas/BundleDetailsSchema"
           },
+          "charges": {
+            "type": "array",
+            "description": "Custom line-item-level charges attached to this bag and folded into its payment methods. The amount is per unit and is multiplied by quantity.",
+            "items": {
+              "$ref": "#/components/schemas/CreateOrderLineItemChargeSchema"
+            }
+          },
           "meta": {
             "type": "object",
             "additionalProperties": true,
@@ -141332,7 +144023,7 @@
         "properties": {
           "rate": {
             "type": "number",
-            "description": "The exchange rate used to convert monetary values from the ordering currency to the seller's currency."
+            "description": "The exchange rate used to convert monetary values from the ordering currency to the seller's currency: seller-currency units per ONE ordering-currency unit, so 80 for an order priced in USD for a seller in INR. It is required, and it must be exactly 1 when the ordering currency is the seller's own currency, since there is nothing to convert."
           },
           "timestamp_ms": {
             "type": "integer",
@@ -141410,6 +144101,10 @@
             "type": "boolean",
             "default": true,
             "description": "Indicates whether cancellations are allowed when this coupon is applied."
+          },
+          "allow_zero_discount": {
+            "type": "boolean",
+            "description": "Set by the cart when a 0 discount on this coupon is legitimate -- an eligibility-gate coupon rather than a price cut, where the discount amount exactly cancels the item price. Optional, and sent only when true; absence means the coupon is a normal price cut. The order service does not infer this and takes no action without the flag."
           }
         },
         "required": [
@@ -141765,6 +144460,13 @@
             },
             "description": "List of shipments included in the order."
           },
+          "charges": {
+            "type": "array",
+            "description": "Custom order-level charges (e.g. delivery or COD fees) that OMS distributes across the order's shipments and apportions onto their payment methods.",
+            "items": {
+              "$ref": "#/components/schemas/CreateOrderChargeSchema"
+            }
+          },
           "tags": {
             "type": "array",
             "description": "Tags that can be used to filter and categorize orders and shipments.",
@@ -141850,6 +144552,73 @@
           "shipping_details",
           "currency_details",
           "primary_payment_mode"
+        ]
+      },
+      "CreateOrderChargeSchema": {
+        "type": "object",
+        "description": "A custom charge injected at order level. OMS distributes the charge across the order's shipments according to `distribution`, then apportions it across each shipment's payment methods. Use this for charges such as delivery or COD fees that should be tracked and (optionally) excluded from refunds.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 25,
+            "description": "Name of the charge that indicates its purpose (e.g. \"Delivery Charge\"). Must be at most 25 characters."
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "The charge value in the ordering currency. Must be a positive amount."
+          },
+          "refundable": {
+            "type": "boolean",
+            "description": "Whether the charge is refunded when the shipment is cancelled or returned. When set, this is an explicit per-charge override. When omitted, refundability is governed by the application's charges refund configuration (per order state); there is no fixed default. Set `false` for charges that must never be refunded (e.g. delivery/COD fees)."
+          },
+          "distribution": {
+            "type": "string",
+            "description": "How the charge is split across the order's shipments. \"apportion\": split in proportion to each shipment's value (default). \"equally\": split equally across shipments.",
+            "enum": [
+              "apportion",
+              "equally"
+            ],
+            "default": "apportion"
+          },
+          "tax_rule_id": {
+            "type": "string",
+            "description": "Optional tax rule ID applied to this charge. When provided it must resolve to an existing tax rule for the company; an unresolvable ID is rejected at create time. When omitted, no tax is applied to the charge."
+          }
+        },
+        "required": [
+          "name",
+          "amount"
+        ]
+      },
+      "CreateOrderLineItemChargeSchema": {
+        "type": "object",
+        "description": "A custom charge injected at line-item level. The charge is attached to the bag and folded into the bag's payment methods. Line-item charges are always article-level and are never distributed, so `distribution` does not apply here. The amount is per unit; OMS multiplies it by the line item's quantity.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 25,
+            "description": "Name of the charge that indicates its purpose. Must be at most 25 characters."
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "The per-unit charge value in the ordering currency. Must be a positive amount."
+          },
+          "refundable": {
+            "type": "boolean",
+            "description": "Whether the charge is refunded when the bag is cancelled or returned. When set, this is an explicit per-charge override. When omitted, refundability is governed by the application's charges refund configuration (per order state); there is no fixed default."
+          },
+          "tax_rule_id": {
+            "type": "string",
+            "description": "Optional tax rule ID applied to this charge. When provided it must resolve to an existing tax rule for the company; an unresolvable ID is rejected at create time. When omitted, no tax is applied to the charge."
+          }
+        },
+        "required": [
+          "name",
+          "amount"
         ]
       },
       "OrderingSourceConfig": {
@@ -142106,6 +144875,16 @@
             "type": "string",
             "description": "The unique identifier or SKU (Stock Keeping Unit) of the product. This is used to match products across packages and bags.",
             "example": "PROD001"
+          }
+        }
+      },
+      "ListingCountResponseSchema": {
+        "type": "object",
+        "description": "Count of records matching the given filters.",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "The total number of records matching the filters."
           }
         }
       },
@@ -144113,7 +146892,7 @@
           "total_count": {
             "type": "integer",
             "nullable": true,
-            "description": "The total number of shipments matching the query criteria."
+            "description": "The total number of shipments matching the query criteria. Returned as -1 when `include_count=false`."
           },
           "message": {
             "type": "string",
@@ -146445,7 +149224,7 @@
           "total_count": {
             "type": "integer",
             "nullable": true,
-            "description": "The total number of orders matching the query criteria."
+            "description": "The total number of orders matching the query criteria. Returned as -1 when `include_count=false`."
           },
           "message": {
             "type": "string",
@@ -148439,6 +151218,11 @@
             "nullable": true,
             "description": "cod limit"
           },
+          "is_split_cod_available": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when COD can complete this split-payment order (early UX eligibility signal; COD is only selectable on the final leg)."
+          },
           "intent_app": {
             "type": "array",
             "nullable": true,
@@ -149747,6 +152531,27 @@
           "is_active",
           "merchant_user_id",
           "mobileno"
+        ]
+      },
+      "DefaultOfferClassification": {
+        "type": "object",
+        "properties": {
+          "aggregator": {
+            "type": "string",
+            "description": "Aggregator slug (payment gateway) to configure."
+          },
+          "default_offer_type": {
+            "type": "string",
+            "enum": [
+              "bank",
+              "brand"
+            ],
+            "description": "Default offer classification to apply."
+          }
+        },
+        "required": [
+          "aggregator",
+          "default_offer_type"
         ]
       },
       "SetCODOptionDetails": {
@@ -151101,7 +153906,7 @@
         "properties": {
           "is_mop": {
             "type": "boolean",
-            "description": "Whether the offer is a mop or not. MOP is a discount that is applied on the total order value."
+            "description": "Optional. Whether the offer is treated as a MOP (a separate payment leg on the total order value) or a discount. When omitted, it is derived from the resolved offer_type (bank => true, brand => false)."
           },
           "offer_type": {
             "type": "string",
@@ -151109,7 +153914,7 @@
               "bank",
               "brand"
             ],
-            "description": "Type of offer. It can be either a bank or brand offer."
+            "description": "Optional. Type of offer (bank or brand). When omitted, it is resolved from the Sales Channel x payment-gateway configuration (the offer.pg_defaults entry for the aggregator), defaulting to brand."
           },
           "offer_id": {
             "type": "string",
@@ -151183,6 +153988,48 @@
           "gid",
           "status"
         ]
+      },
+      "OrderMetaUpdate": {
+        "type": "object",
+        "description": "Order meta request schema to update order metadata such as PAN. Used when amount >= online_threshold_amount and PAN is required before create-payment-order.",
+        "required": [
+          "pan_no"
+        ],
+        "properties": {
+          "pan_no": {
+            "type": "string",
+            "description": "Valid Indian PAN (Permanent Account Number). Format: 5 letters, 4 digits, 1 letter (e.g. AAAAA9999A). Case-insensitive; stored in uppercase.",
+            "example": "AAAAA9999A",
+            "minLength": 10,
+            "maxLength": 10
+          }
+        }
+      },
+      "OrderMetaResult": {
+        "type": "object",
+        "description": "Order meta update success response schema.",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Success message indicating order meta was updated.",
+            "example": "order meta updated"
+          }
+        }
+      },
+      "OrderMetaErrorResult": {
+        "type": "object",
+        "description": "Order meta update error response schema (400).",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the request was successful.",
+            "example": false
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message describing the failure."
+          }
+        }
       },
       "AddressDetail": {
         "type": "object",
@@ -152620,6 +155467,65 @@
           "is_eligible",
           "message"
         ]
+      },
+      "OrderTransactionList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the request was successful.",
+            "example": true
+          },
+          "items": {
+            "type": "array",
+            "description": "List of transactions ordered by created_on ascending.",
+            "example": [],
+            "items": {
+              "$ref": "#/components/schemas/OrderTransactionItem"
+            }
+          }
+        }
+      },
+      "OrderTransactionItem": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "description": "Merchant transaction ID.",
+            "example": "TR692D2BC451FA77D8GF"
+          },
+          "payment_mode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment mode name (e.g. UPI, Card, COD).",
+            "example": "UPI"
+          },
+          "logo": {
+            "type": "string",
+            "nullable": true,
+            "description": "Payment mode logo URL. Returns the small logo if available, falls back to large logo. Null if no logo is configured.",
+            "example": "https://cdn.fynd.com/payment/upi_small.png"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true,
+            "description": "Transaction amount.",
+            "example": 499
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "description": "Latest transaction status (e.g. complete, pending, failed, cancelled).",
+            "example": "complete"
+          },
+          "created_on": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction creation timestamp (ISO 8601).",
+            "example": "2024-01-15T10:30:00Z"
+          }
+        }
       },
       "ClickStatsResult": {
         "type": "object",
@@ -155674,7 +158580,12 @@
           },
           "phone": {
             "type": "string",
-            "description": "Filter users by their exact phone number."
+            "description": "Filter users by their exact phone number, digits only. Prefer the **national number** with the calling code supplied separately in `country_code`. A full number with the calling code embedded is still accepted, but is ambiguous: without `country_code` the value is searched both as an Indian national number and as a complete international number, so an input valid in either sense may return customers from both."
+          },
+          "country_code": {
+            "type": "string",
+            "x-not-enum": true,
+            "description": "Calling code for `phone`, digits only, an optional leading `+` is accepted (for example `91`, `62`, `+44`). Recommended whenever `phone` holds only the national number - it removes the ambiguity described above and scopes the search to that country. When omitted, a bare number is treated as Indian. Ignored when `phone` is absent."
           },
           "definition_ids": {
             "type": "array",
@@ -155721,14 +158632,25 @@
               "ew",
               "btw",
               "in",
-              "nin"
+              "nin",
+              "today",
+              "tomorrow",
+              "week",
+              "month",
+              "xdays",
+              "days_after_value",
+              "days_before_value"
             ],
-            "description": "Filter operation to apply on the attribute value. Supported operations include:\n- `eq`: Equal to   - `ne`: Not equal to   - `gt`: Greater than (or is after for dates)   - `lt`: Less than (or is before for dates)   - `gte`: Greater than or equal to   - `lte`: Less than or equal to   - `cnt`: Contains (for strings)   - `nct`: Does not contain (for strings)   - `is`: Matches exactly (for strings)   - `nis`: Does not match exactly (for strings)   - `sw`: Starts with (for strings)   - `ew`: Ends with (for strings)   - `btw`: Between two values (for date and datetime types)   - `in`: Value exists in given list   - `nin`: Value does not exist in given list"
+            "description": "Filter operation to apply on the attribute value. Supported operations include:\n- `eq`: Equal to   - `ne`: Not equal to   - `gt`: Greater than (or is after for dates)   - `lt`: Less than (or is before for dates)   - `gte`: Greater than or equal to   - `lte`: Less than or equal to   - `cnt`: Contains (for strings)   - `nct`: Does not contain (for strings)   - `is`: Matches exactly (for strings)   - `nis`: Does not match exactly (for strings)   - `sw`: Starts with (for strings)   - `ew`: Ends with (for strings)   - `btw`: Between two values (for date and datetime types)   - `in`: Value exists in given list   - `nin`: Value does not exist in given list - `today`, `tomorrow`, `week`, and `month`: Date constants - `xdays`: Date range from today through the specified number of days - `days_after_value`, `days_before_value`: Relative date comparisons\nType-native operators are:\n- `number`: `eq`, `ne`, `gt`, `lt`, `gte`, `lte` - `string`, `html_string`, `image_url`: `cnt`, `nct`, `is`, `nis`, `sw`, `ew` - `boolean`: `eq` - `date`: `eq`, `ne`, `gt`, `lt`, `btw`, `today`, `tomorrow`, `week`,\n  `month`, `xdays`, `days_after_value`, `days_before_value`\n- `date_time`: `gt`, `lt`, `btw` - `dropdown`, `number_array`, `string_array`, `store_uid_array`,\n  `platform_user_array`: `in`, `nin`\n\nFor v1 backward compatibility, the previously supported database comparisons remain accepted where their value shape is valid: strings also accept `eq`, `ne`, `gt`, `lt`, `gte`, and `lte`; dates also accept `gte` and `lte`; date-times also accept `eq`, `ne`, `gte`, and `lte`; booleans also accept `ne`; and array-like types also accept `eq` and `ne`. Scalar number, string, boolean, date, and date-time attributes also accept `in` and `nin` with a type-matched value array; numbers also accept `btw` with two ordered numeric values. The relative date operators are restricted to the `date` type."
           },
           "value": {
             "additionalProperties": true,
-            "description": "Values to be used in filtering the attribute. Can be a single value or an array of values. Types supported: string, number, array of string, or array of number.",
+            "description": "Values to be used in filtering the attribute. Can be a single value or an array of values. Types supported: string, number, boolean, array of string, or array of number. `btw` requires an array of exactly two values. `xdays`, `days_after_value` and `days_before_value` take a non-negative whole number (capped at 364 when `ignore_year` is true). The concrete JSON type depends on the referenced attribute definition and is validated by the API.",
             "type": "object"
+          },
+          "ignore_year": {
+            "type": "boolean",
+            "description": "For date conditions, compare month and day without considering the stored year."
           }
         }
       },
@@ -165975,7 +168897,7 @@
       },
       "OptimalLocationsSuccessRequestSchema": {
         "value": {
-          "channel_id": "000000000000000000000004",
+          "channel_id": "60e123aab79dbb5191584164",
           "channel_type": "extension",
           "to_serviceability": {
             "pincode": "400001",
@@ -166001,9 +168923,7 @@
               "meta": {
                 "bag_id": 720104
               },
-              "assign_locations": [
-                2
-              ],
+              "assign_locations": [],
               "ignore_locations": [],
               "seller_id": 1
             }
@@ -166639,6 +169559,8 @@
               "ignore_scheme_ids": [],
               "is_auto_assign": true,
               "is_mto": false,
+              "is_mps": false,
+              "is_b2b": false,
               "meta": {
                 "shipment_cost": 10
               },
@@ -166772,7 +169694,9 @@
                   "manufacturing_time": 1
                 }
               ],
-              "is_mto": true
+              "is_mto": true,
+              "is_mps": false,
+              "is_b2b": false
             }
           ],
           "journey": "return",
